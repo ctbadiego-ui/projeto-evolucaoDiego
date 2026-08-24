@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Projeto Evolução</title>
+  
+  <!-- PWA & Meta Tags -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Evolução">
+  
+  <!-- Bibliotecas Externas (Chart.js + Adapter de Data) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  
+  <!-- Estilos CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/charts.css">
@@ -23,6 +30,7 @@
   </header>
 
   <main class="app-body">
+    <!-- Section: Dashboard -->
     <section id="sec-dashboard" class="view-section active">
       <div class="card summary-card">
         <h2>Resumo de Hoje</h2>
@@ -49,6 +57,7 @@
       </div>
     </section>
 
+    <!-- Section: Registrar -->
     <section id="sec-registrar" class="view-section">
       <div class="card">
         <h2>Registrar Dados de Hoje</h2>
@@ -76,6 +85,7 @@
       </div>
     </section>
 
+    <!-- Section: Dieta -->
     <section id="sec-dieta" class="view-section">
       <div class="card">
         <h2>Plano de Alimentação</h2>
@@ -84,6 +94,7 @@
       </div>
     </section>
 
+    <!-- Section: Treino -->
     <section id="sec-treino" class="view-section">
       <div class="card">
         <div class="tab-header-select">
@@ -101,6 +112,7 @@
       </div>
     </section>
 
+    <!-- Section: Checklist -->
     <section id="sec-checklist" class="view-section">
       <div class="card">
         <h2>Checklist Diário</h2>
@@ -109,6 +121,7 @@
       </div>
     </section>
 
+    <!-- Section: Evolução -->
     <section id="sec-evolucao" class="view-section">
       <div class="card">
         <h2>Histórico de Evolução</h2>
@@ -121,6 +134,7 @@
       </div>
     </section>
 
+    <!-- Section: Gráficos -->
     <section id="sec-graficos" class="view-section">
       <div class="card">
         <h2>Gráfico de Evolução</h2>
@@ -129,6 +143,7 @@
     </section>
   </main>
 
+  <!-- Navegação Inferior -->
   <nav class="bottom-nav">
     <button class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')"><span class="icon">🏠</span><span class="label">Início</span></button>
     <button class="nav-item" id="nav-reg" onclick="switchTab('registrar')"><span class="icon">📝</span><span class="label">Registrar</span></button>
@@ -137,6 +152,7 @@
     <button class="nav-item" id="nav-more" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
   </nav>
 
+  <!-- Scripts JavaScript do Projeto -->
   <script src="js/storage.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/treino.js"></script>
@@ -145,6 +161,8 @@
   <script src="js/progresso.js"></script>
   <script src="js/panturrilha.js"></script>
   <script src="js/graficos.js"></script>
+  <script src="service-worker.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
+
