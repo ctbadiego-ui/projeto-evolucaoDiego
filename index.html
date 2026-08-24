@@ -136,9 +136,9 @@
           </div>
         </div>
 
-        <!-- Cadastrar em 100g -->
+        <!-- Cadastrar/Editar em 100g -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; margin-bottom: 15px;">
-          <h3 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
+          <h3 id="titulo-salvar-alimento" style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
             <input type="text" id="input-novo-nome" placeholder="Nome (ex: Arroz, Frango)" style="padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
             <div style="display: flex; gap: 8px;">
@@ -146,13 +146,22 @@
               <input type="number" step="0.1" id="input-nova-prot" placeholder="Proteína (g) em 100g" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
             </div>
           </div>
-          <button type="button" class="btn-primary" style="padding: 6px; font-size: 0.8rem; background: #38bdf8;" onclick="cadastrarAlimentoBiblioteca()">+ Salvar na Biblioteca</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btn-salvar-alimento" class="btn-primary" style="flex: 1; padding: 6px; font-size: 0.8rem; background: #38bdf8;" onclick="cadastrarAlimentoBiblioteca()">+ Salvar na Biblioteca</button>
+            <button type="button" id="btn-cancelar-edicao" class="btn-primary" style="flex: 1; padding: 6px; font-size: 0.8rem; background: #64748b; display: none;" onclick="cancelarEdicao()">Cancelar</button>
+          </div>
         </div>
 
         <!-- Gerenciar Alimentos da Biblioteca -->
-        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
-          <h3 style="font-size: 0.85rem; color: #f43f5e; margin-bottom: 8px;">🗑️ Gerenciar Biblioteca (Excluir Alimentos Salvos)</h3>
-          <div id="lista-biblioteca-excluir"></div>
+        <div style="margin-bottom: 15px;">
+          <button type="button" onclick="toggleGerenciarBiblioteca()" style="width: 100%; padding: 8px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-align: center;">
+            ⚙️ Gerenciar / Editar Alimentos Salvos 🔻
+          </button>
+          
+          <div id="box-gerenciar-biblioteca" style="display: none; background: #0f172a; padding: 12px; border-radius: 0 0 8px 8px; border: 1px solid #334155; border-top: none; margin-top: -2px;">
+            <h3 style="font-size: 0.8rem; color: #eab308; margin-bottom: 8px;">Clique para Editar ou Excluir:</h3>
+            <div id="lista-biblioteca-excluir"></div>
+          </div>
         </div>
         
         <!-- Lista do Dia -->
@@ -205,6 +214,7 @@
   <script>
     const ALTURA = 175;
     const IDADE = 31;
+    let editIndexAlimento = -1; // Variável para controlar a edição
 
     function switchTab(tabId) {
       var sections = document.querySelectorAll('.view-section');
@@ -259,16 +269,60 @@
       }
 
       let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
-      biblioteca.push({ nome, cal100g, prot100g });
-      localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
+      
+      if (editIndexAlimento >= 0) {
+        // Modo de edição
+        biblioteca[editIndexAlimento] = { nome, cal100g, prot100g };
+        alert(`Alimento "${nome}" ATUALIZADO com sucesso!`);
+      } else {
+        // Modo de criação
+        biblioteca.push({ nome, cal100g, prot100g });
+        alert(`Alimento "${nome}" SALVO com sucesso!`);
+      }
 
+      localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
+      
+      // Reseta o formulário e botões
+      cancelarEdicao();
+
+      atualizarSelectAlimentosSalvos();
+      renderGerenciarBiblioteca();
+    }
+
+    function editarAlimentoBiblioteca(index) {
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      const alimento = biblioteca[index];
+      
+      // Preenche os campos
+      document.getElementById('input-novo-nome').value = alimento.nome;
+      document.getElementById('input-nova-cal').value = alimento.cal100g;
+      document.getElementById('input-nova-prot').value = alimento.prot100g || 0;
+      
+      editIndexAlimento = index; // Salva o índice que está sendo editado
+      
+      // Muda a interface para o modo de edição
+      document.getElementById('titulo-salvar-alimento').textContent = '✏️ Editar Alimento da Biblioteca';
+      document.getElementById('btn-salvar-alimento').textContent = '💾 Atualizar Alimento';
+      document.getElementById('btn-salvar-alimento').style.background = '#eab308'; // amarelo
+      document.getElementById('btn-cancelar-edicao').style.display = 'block';
+      
+      // Sobe a tela para o bloco de edição
+      window.scrollTo({ top: document.getElementById('sec-dieta').offsetTop, behavior: 'smooth' });
+    }
+
+    function cancelarEdicao() {
+      editIndexAlimento = -1;
+      
+      // Limpa os campos
       document.getElementById('input-novo-nome').value = '';
       document.getElementById('input-nova-cal').value = '';
       document.getElementById('input-nova-prot').value = '';
-
-      alert(`Alimento "${nome}" salvo com sucesso!`);
-      atualizarSelectAlimentosSalvos();
-      renderGerenciarBiblioteca();
+      
+      // Volta a interface para o modo de criação
+      document.getElementById('titulo-salvar-alimento').textContent = '💾 Salvar Novo Alimento (Base: 100g)';
+      document.getElementById('btn-salvar-alimento').textContent = '+ Salvar na Biblioteca';
+      document.getElementById('btn-salvar-alimento').style.background = '#38bdf8'; // azul original
+      document.getElementById('btn-cancelar-edicao').style.display = 'none';
     }
 
     function atualizarSelectAlimentosSalvos() {
@@ -292,6 +346,15 @@
       calcularPreviewCalorias();
     }
 
+    function toggleGerenciarBiblioteca() {
+      const box = document.getElementById('box-gerenciar-biblioteca');
+      if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
     function renderGerenciarBiblioteca() {
       const container = document.getElementById('lista-biblioteca-excluir');
       if (!container) return;
@@ -304,9 +367,15 @@
 
       let html = '';
       biblioteca.forEach((item, idx) => {
-        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:4px; margin-bottom:4px;">
-          <span style="font-size:0.85rem; color:#f8fafc;">${item.nome} <small style="color:#94a3b8;">(${item.cal100g} kcal/100g)</small></span>
-          <button onclick="excluirAlimentoBiblioteca(${idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-weight:bold;">❌ Excluir</button>
+        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 10px; border-radius:4px; margin-bottom:6px;">
+          <div style="display:flex; flex-direction:column;">
+            <span style="font-size:0.85rem; color:#f8fafc; font-weight:bold;">${item.nome}</span>
+            <span style="font-size:0.75rem; color:#94a3b8;">${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g</span>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button onclick="editarAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Editar">✏️</button>
+            <button onclick="excluirAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Excluir">❌</button>
+          </div>
         </div>`;
       });
       container.innerHTML = html;
@@ -319,6 +388,12 @@
       if (confirm(`Deseja remover "${alimento.nome}" da sua biblioteca?`)) {
         biblioteca.splice(index, 1);
         localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
+        
+        // Se estiver editando o item que foi excluído, cancela a edição
+        if (editIndexAlimento === index) {
+          cancelarEdicao();
+        }
+        
         atualizarSelectAlimentosSalvos();
         renderGerenciarBiblioteca();
       }
