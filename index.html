@@ -106,7 +106,7 @@
       </div>
     </section>
 
-    <!-- Section: Dieta (Por Gramas / 100g) -->
+    <!-- Section: Dieta (Com cálculo de Proteína e Kcal por Gramas) -->
     <section id="sec-dieta" class="view-section">
       <div class="card">
         <h2>Controle de Alimentação</h2>
@@ -123,10 +123,10 @@
               </select>
             </div>
 
-            <!-- Preview do Cálculo em Gramas -->
+            <!-- Preview em Gramas -->
             <div id="preview-calorias" style="font-size: 0.85rem; color: #38bdf8; font-weight: bold; background: #1e293b; padding: 6px 10px; border-radius: 4px; display: none; justify-content: space-between;">
-              <span>Calorias do peso digitado:</span>
-              <span id="preview-calorias-valor">0 kcal</span>
+              <span>Valores para este peso:</span>
+              <span id="preview-calorias-valor">0 kcal | 0g prot</span>
             </div>
 
             <div style="display: flex; gap: 8px;">
@@ -136,12 +136,15 @@
           </div>
         </div>
 
-        <!-- Cadastrar em 100g -->
+        <!-- Cadastrar em 100g (Kcal + Proteína) -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; margin-bottom: 15px;">
           <h3 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
-          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input type="text" id="input-novo-nome" placeholder="Nome (ex: Arroz, Frango)" style="flex: 2; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
-            <input type="number" id="input-nova-cal" placeholder="Kcal em 100g" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="input-novo-nome" placeholder="Nome (ex: Arroz, Frango)" style="padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+            <div style="display: flex; gap: 8px;">
+              <input type="number" id="input-nova-cal" placeholder="Kcal em 100g" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+              <input type="number" step="0.1" id="input-nova-prot" placeholder="Proteína (g) em 100g" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+            </div>
           </div>
           <button type="button" class="btn-primary" style="padding: 6px; font-size: 0.8rem; background: #38bdf8;" onclick="cadastrarAlimentoBiblioteca()">+ Salvar na Biblioteca</button>
         </div>
@@ -238,24 +241,25 @@
       switchTab('dashboard');
     }
 
-    // Cadastra o alimento com base em 100g
     function cadastrarAlimentoBiblioteca() {
       const nome = document.getElementById('input-novo-nome').value.trim();
       const cal100g = parseInt(document.getElementById('input-nova-cal').value) || 0;
+      const prot100g = parseFloat(document.getElementById('input-nova-prot').value) || 0;
 
       if (!nome || cal100g <= 0) {
-        alert('Digite o nome do alimento e as calorias para 100g!');
+        alert('Digite o nome do alimento e as calorias em 100g!');
         return;
       }
 
       let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
-      biblioteca.push({ nome, cal100g });
+      biblioteca.push({ nome, cal100g, prot100g });
       localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
 
       document.getElementById('input-novo-nome').value = '';
       document.getElementById('input-nova-cal').value = '';
+      document.getElementById('input-nova-prot').value = '';
 
-      alert(`Alimento "${nome}" salvo (${cal100g} kcal/100g)!`);
+      alert(`Alimento "${nome}" salvo (${cal100g} kcal e ${prot100g}g prot por 100g)!`);
       atualizarSelectAlimentosSalvos();
     }
 
@@ -273,14 +277,13 @@
 
       let html = '<option value="">-- Selecione um alimento --</option>';
       biblioteca.forEach((item, index) => {
-        html += `<option value="${index}">${item.nome} (${item.cal100g} kcal/100g)</option>`;
+        html += `<option value="${index}">${item.nome} (${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g)</option>`;
       });
 
       selectEl.innerHTML = html;
       calcularPreviewCalorias();
     }
 
-    // Calcula no preview a regra de três com base nos gramas digitados
     function calcularPreviewCalorias() {
       const selectEl = document.getElementById('select-alimento-salvo');
       const previewEl = document.getElementById('preview-calorias');
@@ -297,7 +300,8 @@
 
       if (alimento && gramas > 0) {
         const calCalculada = Math.round((alimento.cal100g * gramas) / 100);
-        valorEl.textContent = `${calCalculada} kcal (${gramas}g)`;
+        const protCalculada = ((((alimento.prot100g || 0) * gramas) / 100)).toFixed(1);
+        valorEl.textContent = `${calCalculada} kcal | ${protCalculada}g prot (${gramas}g)`;
         previewEl.style.display = 'flex';
       } else {
         previewEl.style.display = 'none';
@@ -318,10 +322,11 @@
       const alimento = biblioteca[idx];
 
       const calTotal = Math.round((alimento.cal100g * gramas) / 100);
+      const protTotal = parseFloat((((alimento.prot100g || 0) * gramas) / 100).toFixed(1));
       const nomeRegistro = `${alimento.nome} (${gramas}g)`;
 
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
-      refeicoes.push({ nome: nomeRegistro, cal: calTotal });
+      refeicoes.push({ nome: nomeRegistro, cal: calTotal, prot: protTotal });
       localStorage.setItem('user_refeicoes', JSON.stringify(refeicoes));
 
       document.getElementById('input-gramas').value = '';
@@ -350,7 +355,7 @@
       let html = '';
       refeicoes.forEach((ref, idx) => {
         html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-          <div><strong style="color:#f8fafc; font-size:0.9rem;">${ref.nome}</strong> - <span style="color:#38bdf8;">${ref.cal} kcal</span></div>
+          <div><strong style="color:#f8fafc; font-size:0.9rem;">${ref.nome}</strong> - <span style="color:#38bdf8;">${ref.cal} kcal</span> <span style="color:#22c55e; font-size:0.8rem;">(${ref.prot || 0}g prot)</span></div>
           <button onclick="removerRefeicao(${idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer;">❌</button>
         </div>`;
       });
@@ -393,6 +398,10 @@
 
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
       const caloriasIn = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
+      const proteinaIn = refeicoes.reduce((acc, curr) => acc + (curr.prot || 0), 0);
+
+      // Atualiza a barra de proteína no topo do Início
+      document.getElementById('dash-proteina').textContent = `${proteinaIn.toFixed(1)}g / 160g`;
 
       const balanco = caloriasIn - gastoTotal;
 
