@@ -23,6 +23,39 @@
     .nav-item.active { opacity: 1; color: #38bdf8 !important; }
     .nav-card-btn { cursor: pointer; }
     .kpi-card { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-top: 10px; }
+    
+    /* Espaçamento e alinhamento das métricas */
+    .metrics-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .metric-box {
+      background: #1e293b;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .metric-box .label {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+    .metric-box .value {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #f8fafc;
+    }
+    .metric-box.highlighted {
+      border-color: #38bdf8;
+      background: #0f172a;
+    }
+    .metric-box.highlighted .value {
+      color: #38bdf8;
+    }
   </style>
 </head>
 <body>
@@ -39,14 +72,14 @@
       <div class="card summary-card">
         <h2>Resumo de Hoje</h2>
         <div class="metrics-grid">
-          <div class="metric-box"><span class="label">Peso</span><span class="value" id="dash-peso">-- kg</span></div>
-          <div class="metric-box"><span class="label">Cintura</span><span class="value" id="dash-cintura">-- cm</span></div>
-          <div class="metric-box"><span class="label">Panturrilha</span><span class="value" id="dash-panturrilha">-- cm</span></div>
-          <div class="metric-box highlighted"><span class="label">Proteína</span><span class="value" id="dash-proteina">0g / 160g</span></div>
+          <div class="metric-box"><span class="label">Peso:</span><span class="value" id="dash-peso">-- kg</span></div>
+          <div class="metric-box"><span class="label">Cintura:</span><span class="value" id="dash-cintura">-- cm</span></div>
+          <div class="metric-box"><span class="label">Panturrilha:</span><span class="value" id="dash-panturrilha">-- cm</span></div>
+          <div class="metric-box highlighted"><span class="label">Proteína:</span><span class="value" id="dash-proteina">0g / 160g</span></div>
         </div>
 
         <div class="kpi-card">
-          <div style="font-size: 0.85rem; color: #94a3b8; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+          <div style="font-size: 0.85rem; color: #94a3b8; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between;">
               <span>🫀 Corpo Funcionar (Basal):</span>
               <strong id="dash-basal" style="color: #cbd5e1;">0 kcal</strong>
@@ -55,7 +88,7 @@
               <span>🏋️ Exercícios e Treino:</span>
               <strong id="dash-gasto-treino" style="color: #38bdf8;">0 kcal</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; border-top: 1px dashed #334155; padding-top: 4px; margin-top: 2px;">
+            <div style="display: flex; justify-content: space-between; border-top: 1px dashed #334155; padding-top: 6px; margin-top: 2px;">
               <span>🔥 Gasto Total do Dia:</span>
               <strong id="dash-gasto-total" style="color: #f43f5e;">0 kcal</strong>
             </div>
@@ -65,8 +98,8 @@
             </div>
           </div>
           
-          <div style="text-align: center; padding: 8px; background: #0f172a; border-radius: 6px; margin-top: 5px;">
-            <span style="font-size: 0.8rem; color: #94a3b8; display: block;">Balanço Calórico (Déficit / Superávit):</span>
+          <div style="text-align: center; padding: 10px; background: #0f172a; border-radius: 6px; margin-top: 8px;">
+            <span style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 2px;">Balanço Calórico (Déficit / Superávit):</span>
             <strong id="dash-deficit" style="font-size: 1.2rem; color: #22c55e;">0 kcal</strong>
           </div>
         </div>
@@ -214,7 +247,7 @@
   <script>
     const ALTURA = 175;
     const IDADE = 31;
-    let editIndexAlimento = -1; // Variável para controlar a edição
+    let editIndexAlimento = -1;
 
     function switchTab(tabId) {
       var sections = document.querySelectorAll('.view-section');
@@ -271,18 +304,15 @@
       let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
       
       if (editIndexAlimento >= 0) {
-        // Modo de edição
         biblioteca[editIndexAlimento] = { nome, cal100g, prot100g };
         alert(`Alimento "${nome}" ATUALIZADO com sucesso!`);
       } else {
-        // Modo de criação
         biblioteca.push({ nome, cal100g, prot100g });
         alert(`Alimento "${nome}" SALVO com sucesso!`);
       }
 
       localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
       
-      // Reseta o formulário e botões
       cancelarEdicao();
 
       atualizarSelectAlimentosSalvos();
@@ -293,35 +323,30 @@
       let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
       const alimento = biblioteca[index];
       
-      // Preenche os campos
       document.getElementById('input-novo-nome').value = alimento.nome;
       document.getElementById('input-nova-cal').value = alimento.cal100g;
       document.getElementById('input-nova-prot').value = alimento.prot100g || 0;
       
-      editIndexAlimento = index; // Salva o índice que está sendo editado
+      editIndexAlimento = index;
       
-      // Muda a interface para o modo de edição
       document.getElementById('titulo-salvar-alimento').textContent = '✏️ Editar Alimento da Biblioteca';
       document.getElementById('btn-salvar-alimento').textContent = '💾 Atualizar Alimento';
-      document.getElementById('btn-salvar-alimento').style.background = '#eab308'; // amarelo
+      document.getElementById('btn-salvar-alimento').style.background = '#eab308';
       document.getElementById('btn-cancelar-edicao').style.display = 'block';
       
-      // Sobe a tela para o bloco de edição
       window.scrollTo({ top: document.getElementById('sec-dieta').offsetTop, behavior: 'smooth' });
     }
 
     function cancelarEdicao() {
       editIndexAlimento = -1;
       
-      // Limpa os campos
       document.getElementById('input-novo-nome').value = '';
       document.getElementById('input-nova-cal').value = '';
       document.getElementById('input-nova-prot').value = '';
       
-      // Volta a interface para o modo de criação
       document.getElementById('titulo-salvar-alimento').textContent = '💾 Salvar Novo Alimento (Base: 100g)';
       document.getElementById('btn-salvar-alimento').textContent = '+ Salvar na Biblioteca';
-      document.getElementById('btn-salvar-alimento').style.background = '#38bdf8'; // azul original
+      document.getElementById('btn-salvar-alimento').style.background = '#38bdf8';
       document.getElementById('btn-cancelar-edicao').style.display = 'none';
     }
 
@@ -389,7 +414,6 @@
         biblioteca.splice(index, 1);
         localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
         
-        // Se estiver editando o item que foi excluído, cancela a edição
         if (editIndexAlimento === index) {
           cancelarEdicao();
         }
