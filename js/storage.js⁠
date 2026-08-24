@@ -1,20 +1,10 @@
-const STORAGE_KEYS = {
-  REGISTROS: 'ev_registros',
-  DIETA_HOJE: 'ev_dieta_hoje',
-  CHECKLIST_HOJE: 'ev_checklist_hoje',
-  TREINO_STATUS: 'ev_treino_status'
-};
+const STORAGE_KEY = 'evolucao_data_v1';
 
-function getStorageData(key, defaultVal = {}) {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : defaultVal;
+function getDados() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  return data ? JSON.parse(data) : { registros: [], checklist: {}, agua: 0 };
 }
 
-function setStorageData(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function getTodayString() {
-  const d = new Date();
-  return d.toISOString().split('T')[0];
+function salvarDados(dados) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
 }
