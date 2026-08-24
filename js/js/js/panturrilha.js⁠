@@ -1,0 +1,10 @@
+function getPanturrilhaEvolucao() {
+  const registros = getStorageData(STORAGE_KEYS.REGISTROS, {});
+  const list = [];
+  Object.keys(registros).sort().forEach(date => {
+    if (registros[date].panturrilha) {
+      list.push({ date, valor: registros[date].panturrilha });
+    }
+  });
+  return list;
+}
