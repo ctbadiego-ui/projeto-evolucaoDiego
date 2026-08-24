@@ -5,20 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Projeto Evolução</title>
   
-  <!-- PWA & Meta Tags -->
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Evolução">
-  
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- Estilos CSS -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dashboard.css">
-  <link rel="stylesheet" href="css/graficos.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: #0f172a; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding-bottom: 80px; }
+    .app-header { background: #1e293b; padding: 15px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    .app-header h1 { color: #38bdf8; font-size: 1.2rem; }
+    .date-display { color: #94a3b8; font-size: 0.85rem; }
+    .app-body { padding: 15px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #334155; }
+    
+    /* Controle de Visibilidade das Seções */
+    .view-section { display: none !important; }
+    .view-section.active { display: block !important; }
+    
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .metric-box { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; }
+    .metric-box .label { display: block; color: #94a3b8; font-size: 0.75rem; }
+    .metric-box .value { font-size: 1.1rem; font-weight: bold; color: #f8fafc; margin-top: 4px; display: block; }
+    .metric-box.highlighted { border-color: #38bdf8; }
+    .progress-container { margin-top: 15px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
+    .progress-bar-bg { background: #0f172a; height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { background: #38bdf8; height: 100%; transition: width 0.3s; }
+    .quick-nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+    .nav-card-btn { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px 5px; color: #f8fafc; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #334155; display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; }
+    .nav-item { background: none; border: none; color: #64748b; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .nav-item.active { color: #38bdf8; }
+    .nav-item .icon { font-size: 1.2rem; }
+  </style>
 </head>
 <body>
   <header class="app-header">
@@ -32,7 +47,7 @@
     <!-- Section: Dashboard -->
     <section id="sec-dashboard" class="view-section active">
       <div class="card summary-card">
-        <h2>Resumo de Hoje</h2>
+        <h2 style="color: #f8fafc; font-size: 1.1rem;">Resumo de Hoje</h2>
         <div class="metrics-grid">
           <div class="metric-box"><span class="label">Peso</span><span class="value" id="dash-peso">-- kg</span></div>
           <div class="metric-box"><span class="label">Cintura</span><span class="value" id="dash-cintura">-- cm</span></div>
@@ -41,103 +56,22 @@
         </div>
         <div class="progress-container">
           <div class="progress-label"><span>Água Consumida</span><span id="dash-agua-val">0 / 3000 ml</span></div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill" id="dash-agua-bar" style="width: 0%;"></div></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="dash-agua-bar" style="width: 30%;"></div></div>
         </div>
-        <div class="today-workout-badge"><span>Treino de Hoje:</span><strong id="dash-treino-nome">Carregando...</strong></div>
       </div>
 
       <div class="quick-nav-grid">
         <button class="nav-card-btn" onclick="switchTab('registrar')"><span class="icon">📝</span><span class="title">Registrar</span></button>
         <button class="nav-card-btn" onclick="switchTab('dieta')"><span class="icon">🍽️</span><span class="title">Dieta</span></button>
         <button class="nav-card-btn" onclick="switchTab('treino')"><span class="icon">🏋️</span><span class="title">Treino</span></button>
-        <button class="nav-card-btn" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="title">Checklist</span></button>
-        <button class="nav-card-btn" onclick="switchTab('evolucao')"><span class="icon">📊</span><span class="title">Evolução</span></button>
-        <button class="nav-card-btn" onclick="switchTab('graficos')"><span class="icon">📈</span><span class="title">Gráficos</span></button>
       </div>
     </section>
 
     <!-- Section: Registrar -->
     <section id="sec-registrar" class="view-section">
       <div class="card">
-        <h2>Registrar Dados de Hoje</h2>
-        <form id="form-registro" onsubmit="saveRegistroHoje(event)">
-          <div class="form-group-title">Medidas Corporais</div>
-          <div class="form-row">
-            <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.1" id="input-peso" placeholder="Ex: 75.5"></div>
-            <div class="form-group"><label>Cintura (cm)</label><input type="number" step="0.1" id="input-cintura" placeholder="Ex: 82.0"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Panturrilha (cm)</label><input type="number" step="0.1" id="input-panturrilha" placeholder="Ex: 38.0"></div>
-            <div class="form-group"><label>Água (ml)</label><input type="number" step="100" id="input-agua" placeholder="Ex: 2500"></div>
-          </div>
-          <div class="form-group-title">Cardio do Dia</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tipo</label>
-              <select id="input-cardio-tipo"><option value="Esteira">Esteira</option><option value="Bicicleta">Bicicleta</option><option value="Caminhada">Caminhada</option></select>
-            </div>
-            <div class="form-group"><label>Tempo (min)</label><input type="number" id="input-cardio-tempo" placeholder="Ex: 30"></div>
-          </div>
-          <div class="form-group"><label>Distância (km)</label><input type="number" step="0.01" id="input-cardio-dist" placeholder="Ex: 5.0"></div>
-          <button type="submit" class="btn-primary">Salvar Registro</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Section: Dieta -->
-    <section id="sec-dieta" class="view-section">
-      <div class="card">
-        <h2>Plano de Alimentação</h2>
-        <div class="macro-summary"><span>Proteína Total Consumida Hoje:</span><strong id="dieta-proteina-total">0g</strong></div>
-        <div id="meals-container"></div>
-      </div>
-    </section>
-
-    <!-- Section: Treino -->
-    <section id="sec-treino" class="view-section">
-      <div class="card">
-        <div class="tab-header-select">
-          <label>Dia da Semana:</label>
-          <select id="select-dia-treino" onchange="renderTreino(this.value)">
-            <option value="Segunda">Segunda - Parte Superior</option>
-            <option value="Terca">Terça - Parte Inferior</option>
-            <option value="Quarta">Quarta - Cardio</option>
-            <option value="Quinta">Quinta - Superior + Abdômen</option>
-            <option value="Sexta">Sexta - Inferior + Bicicleta</option>
-          </select>
-        </div>
-        <h3 id="treino-titulo" class="workout-title">Treino</h3>
-        <div id="exercises-list" class="checklist-group"></div>
-      </div>
-    </section>
-
-    <!-- Section: Checklist -->
-    <section id="sec-checklist" class="view-section">
-      <div class="card">
-        <h2>Checklist Diário</h2>
-        <p class="subtitle">Acompanhe seu cumprimento de metas hoje</p>
-        <div id="checklist-items" class="checklist-group"></div>
-      </div>
-    </section>
-
-    <!-- Section: Evolução -->
-    <section id="sec-evolucao" class="view-section">
-      <div class="card">
-        <h2>Histórico de Evolução</h2>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Panturrilha</th></tr></thead>
-            <tbody id="historico-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section: Gráficos -->
-    <section id="sec-graficos" class="view-section">
-      <div class="card">
-        <h2>Gráfico de Evolução</h2>
-        <div class="chart-container"><canvas id="mainChart"></canvas></div>
+        <h2 style="color: #f8fafc; font-size: 1.1rem; margin-bottom: 10px;">Registrar Dados de Hoje</h2>
+        <p style="color: #94a3b8; font-size: 0.9rem;">Formulário de registro em breve.</p>
       </div>
     </section>
   </main>
@@ -146,30 +80,41 @@
   <nav class="bottom-nav">
     <button class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')"><span class="icon">🏠</span><span class="label">Início</span></button>
     <button class="nav-item" id="nav-reg" onclick="switchTab('registrar')"><span class="icon">📝</span><span class="label">Registrar</span></button>
-    <button class="nav-item" id="nav-diet" onclick="switchTab('dieta')"><span class="icon">🍽️</span><span class="label">Dieta</span></button>
-    <button class="nav-item" id="nav-workout" onclick="switchTab('treino')"><span class="icon">🏋️</span><span class="label">Treino</span></button>
-    <button class="nav-item" id="nav-more" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
   </nav>
 
-  <!-- Scripts JavaScript do Projeto -->
-  <script src="js/storage.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/treino.js"></script>
-  <script src="js/dieta.js"></script>
-  <script src="js/checklist.js"></script>
-  <script src="js/progresso.js"></script>
-  <script src="js/panturrilha.js"></script>
-  <script src="js/graficos.js"></script>
-  <script src="js/app.js"></script>
-
-  <!-- Registro seguro do Service Worker para PWA -->
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .catch(err => console.log('Service Worker erro:', err));
-      });
+    function switchTab(tabId) {
+      // Oculta todas as seções
+      const sections = document.querySelectorAll('.view-section');
+      sections.forEach(sec => sec.classList.remove('active'));
+
+      // Remove destaque dos botões
+      const buttons = document.querySelectorAll('.nav-item');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      // Ativa a seção selecionada
+      const targetSection = document.getElementById('sec-' + tabId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+
+      // Destaca o botão selecionado
+      const targetBtn = document.getElementById('nav-' + (tabId === 'dashboard' ? 'dash' : 'reg'));
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Atualiza data atual
+      const dateEl = document.getElementById('current-date-display');
+      if (dateEl) {
+        const hoje = new Date();
+        dateEl.textContent = hoje.toLocaleDateString('pt-BR');
+      }
+      // Garante exibição do dashboard na abertura
+      switchTab('dashboard');
+    });
   </script>
 </body>
 </html>
