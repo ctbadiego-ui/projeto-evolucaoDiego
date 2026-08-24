@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Projeto Evolução</title>
 
-  <!-- PWA & Meta Tags -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Estilos CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/graficos.css">
@@ -48,7 +45,6 @@
           <div class="metric-box highlighted"><span class="label">Proteína</span><span class="value" id="dash-proteina">0g / 160g</span></div>
         </div>
 
-        <!-- Bloco de Controle Calórico Detalhado -->
         <div class="kpi-card">
           <div style="font-size: 0.85rem; color: #94a3b8; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between;">
@@ -110,18 +106,47 @@
       </div>
     </section>
 
-    <!-- Section: Dieta -->
+    <!-- Section: Dieta (Por Gramas / 100g) -->
     <section id="sec-dieta" class="view-section">
       <div class="card">
-        <h2>Lançar Refeições do Dia</h2>
+        <h2>Controle de Alimentação</h2>
+
+        <!-- Lançar por Gramas -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
-          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input type="text" id="input-refeicao-nome" placeholder="Refeição (ex: Almoço)" style="flex: 2; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
-            <input type="number" id="input-refeicao-cal" placeholder="Kcal" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+          <h3 style="font-size: 0.9rem; color: #38bdf8; margin-bottom: 8px;">⚖️ Lançar Alimento em Gramas</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 0.75rem; color: #94a3b8;">Escolha o alimento:</label>
+              <select id="select-alimento-salvo" onchange="calcularPreviewCalorias()" style="width: 100%; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+                <option value="">Nenhum alimento salvo ainda...</option>
+              </select>
+            </div>
+
+            <!-- Preview do Cálculo em Gramas -->
+            <div id="preview-calorias" style="font-size: 0.85rem; color: #38bdf8; font-weight: bold; background: #1e293b; padding: 6px 10px; border-radius: 4px; display: none; justify-content: space-between;">
+              <span>Calorias do peso digitado:</span>
+              <span id="preview-calorias-valor">0 kcal</span>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <input type="number" id="input-gramas" placeholder="Qtd em Gramas (ex: 15, 150)" oninput="calcularPreviewCalorias()" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+              <button type="button" class="btn-primary" style="flex: 1; padding: 8px; background: #22c55e;" onclick="lancarAlimentoSalvo()">Lançar Gramas</button>
+            </div>
           </div>
-          <button type="button" class="btn-primary" style="padding: 8px;" onclick="adicionarRefeicao()">+ Adicionar Refeição</button>
+        </div>
+
+        <!-- Cadastrar em 100g -->
+        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; margin-bottom: 15px;">
+          <h3 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="input-novo-nome" placeholder="Nome (ex: Arroz, Frango)" style="flex: 2; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+            <input type="number" id="input-nova-cal" placeholder="Kcal em 100g" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+          </div>
+          <button type="button" class="btn-primary" style="padding: 6px; font-size: 0.8rem; background: #38bdf8;" onclick="cadastrarAlimentoBiblioteca()">+ Salvar na Biblioteca</button>
         </div>
         
+        <!-- Lista do Dia -->
         <h3 style="font-size: 0.95rem; color: #38bdf8; margin-bottom: 10px;">Refeições de Hoje:</h3>
         <div id="lista-refeicoes"></div>
       </div>
@@ -166,7 +191,7 @@
     <button class="nav-item" id="nav-checklist" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
   </nav>
 
-  <!-- Scripts do App -->
+  <!-- Scripts -->
   <script src="js/treino.js"></script>
   <script>
     const ALTURA = 175;
@@ -189,6 +214,11 @@
         var selectEl = document.getElementById('select-dia-treino');
         renderTreino(selectEl ? selectEl.value : 'Segunda');
       }
+
+      if (tabId === 'dieta') {
+        atualizarSelectAlimentosSalvos();
+      }
+
       atualizarDashboard();
     }
 
@@ -208,18 +238,95 @@
       switchTab('dashboard');
     }
 
-    function adicionarRefeicao() {
-      const nome = document.getElementById('input-refeicao-nome').value;
-      const cal = parseInt(document.getElementById('input-refeicao-cal').value) || 0;
+    // Cadastra o alimento com base em 100g
+    function cadastrarAlimentoBiblioteca() {
+      const nome = document.getElementById('input-novo-nome').value.trim();
+      const cal100g = parseInt(document.getElementById('input-nova-cal').value) || 0;
 
-      if (!nome || cal <= 0) { alert('Preencha o nome e as calorias!'); return; }
+      if (!nome || cal100g <= 0) {
+        alert('Digite o nome do alimento e as calorias para 100g!');
+        return;
+      }
+
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      biblioteca.push({ nome, cal100g });
+      localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
+
+      document.getElementById('input-novo-nome').value = '';
+      document.getElementById('input-nova-cal').value = '';
+
+      alert(`Alimento "${nome}" salvo (${cal100g} kcal/100g)!`);
+      atualizarSelectAlimentosSalvos();
+    }
+
+    function atualizarSelectAlimentosSalvos() {
+      const selectEl = document.getElementById('select-alimento-salvo');
+      if (!selectEl) return;
+
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+
+      if (biblioteca.length === 0) {
+        selectEl.innerHTML = '<option value="">Nenhum alimento salvo ainda...</option>';
+        document.getElementById('preview-calorias').style.display = 'none';
+        return;
+      }
+
+      let html = '<option value="">-- Selecione um alimento --</option>';
+      biblioteca.forEach((item, index) => {
+        html += `<option value="${index}">${item.nome} (${item.cal100g} kcal/100g)</option>`;
+      });
+
+      selectEl.innerHTML = html;
+      calcularPreviewCalorias();
+    }
+
+    // Calcula no preview a regra de três com base nos gramas digitados
+    function calcularPreviewCalorias() {
+      const selectEl = document.getElementById('select-alimento-salvo');
+      const previewEl = document.getElementById('preview-calorias');
+      const valorEl = document.getElementById('preview-calorias-valor');
+
+      if (!selectEl || selectEl.value === '') {
+        previewEl.style.display = 'none';
+        return;
+      }
+
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      const alimento = biblioteca[selectEl.value];
+      const gramas = parseFloat(document.getElementById('input-gramas').value) || 0;
+
+      if (alimento && gramas > 0) {
+        const calCalculada = Math.round((alimento.cal100g * gramas) / 100);
+        valorEl.textContent = `${calCalculada} kcal (${gramas}g)`;
+        previewEl.style.display = 'flex';
+      } else {
+        previewEl.style.display = 'none';
+      }
+    }
+
+    function lancarAlimentoSalvo() {
+      const selectEl = document.getElementById('select-alimento-salvo');
+      const idx = selectEl.value;
+      const gramas = parseFloat(document.getElementById('input-gramas').value) || 0;
+
+      if (idx === '' || gramas <= 0) {
+        alert('Selecione um alimento e digite a quantidade em gramas!');
+        return;
+      }
+
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      const alimento = biblioteca[idx];
+
+      const calTotal = Math.round((alimento.cal100g * gramas) / 100);
+      const nomeRegistro = `${alimento.nome} (${gramas}g)`;
 
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
-      refeicoes.push({ nome, cal });
+      refeicoes.push({ nome: nomeRegistro, cal: calTotal });
       localStorage.setItem('user_refeicoes', JSON.stringify(refeicoes));
 
-      document.getElementById('input-refeicao-nome').value = '';
-      document.getElementById('input-refeicao-cal').value = '';
+      document.getElementById('input-gramas').value = '';
+      selectEl.value = '';
+      document.getElementById('preview-calorias').style.display = 'none';
 
       renderRefeicoes();
       atualizarDashboard();
@@ -237,7 +344,7 @@
       const container = document.getElementById('lista-refeicoes');
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
       if (refeicoes.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhuma refeição registrada hoje.</p>';
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhuma refeição lançada hoje.</p>';
         return;
       }
       let html = '';
@@ -280,13 +387,8 @@
       document.getElementById('dash-agua-val').textContent = agua + ' / 3000 ml';
       document.getElementById('dash-agua-bar').style.width = Math.min((parseInt(agua) / 3000) * 100, 100) + '%';
 
-      // Cálculo Basal Harris-Benedict (Gasto só para funcionar)
       const bmr = Math.round(88.36 + (13.4 * peso) + (4.8 * ALTURA) - (5.7 * IDADE));
-      
-      // Gasto de Treino vindo do botão de confirmação
       const gastoTreino = parseInt(localStorage.getItem('user_calorias_treino_confirmado')) || 0;
-      
-      // Gasto Total = Basal + Treino
       const gastoTotal = bmr + gastoTreino;
 
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
@@ -315,6 +417,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var dateEl = document.getElementById('current-date-display');
       if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR');
+      atualizarSelectAlimentosSalvos();
       renderRefeicoes();
       atualizarDashboard();
       switchTab('dashboard');
