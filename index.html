@@ -10,7 +10,6 @@
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Evolução">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -21,14 +20,12 @@
   <link rel="stylesheet" href="css/graficos.css">
 
   <style>
-    /* Controla a exibição das telas */
     .view-section { display: none !important; }
     .view-section.active { display: block !important; }
-    
-    /* Estilo da barra inferior */
     .nav-item { opacity: 0.6; cursor: pointer; }
     .nav-item.active { opacity: 1; color: #38bdf8 !important; }
     .nav-card-btn { cursor: pointer; }
+    .kpi-card { background: #1e293b; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -50,7 +47,20 @@
           <div class="metric-box"><span class="label">Panturrilha</span><span class="value" id="dash-panturrilha">-- cm</span></div>
           <div class="metric-box highlighted"><span class="label">Proteína</span><span class="value" id="dash-proteina">0g / 160g</span></div>
         </div>
-        <div class="progress-container">
+
+        <!-- Bloco de Controle Calórico e Déficit -->
+        <div class="kpi-card">
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px;">
+            <span>🔥 Gasto Estimado Total: <strong id="dash-gasto-total" style="color: #f43f5e;">0 kcal</strong></span>
+            <span>🍽️ Consumido: <strong id="dash-calorias-in" style="color: #38bdf8;">0 kcal</strong></span>
+          </div>
+          <div style="text-align: center; padding: 8px; background: #0f172a; border-radius: 6px; margin-top: 5px;">
+            <span style="font-size: 0.8rem; color: #94a3b8; display: block;">Balanço Calórico (Déficit / Superávit):</span>
+            <strong id="dash-deficit" style="font-size: 1.2rem; color: #22c55e;">0 kcal</strong>
+          </div>
+        </div>
+
+        <div class="progress-container" style="margin-top: 15px;">
           <div class="progress-label"><span>Água Consumida</span><span id="dash-agua-val">0 / 3000 ml</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="dash-agua-bar" style="width: 0%;"></div></div>
         </div>
@@ -73,14 +83,14 @@
         <form id="form-registro">
           <div class="form-group-title">Medidas Corporais</div>
           <div class="form-row">
-            <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.1" id="input-peso" placeholder="Ex: 75.5"></div>
+            <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.1" id="input-peso" placeholder="Ex: 80.0"></div>
             <div class="form-group"><label>Cintura (cm)</label><input type="number" step="0.1" id="input-cintura" placeholder="Ex: 82.0"></div>
           </div>
           <div class="form-row">
             <div class="form-group"><label>Panturrilha (cm)</label><input type="number" step="0.1" id="input-panturrilha" placeholder="Ex: 38.0"></div>
             <div class="form-group"><label>Água (ml)</label><input type="number" step="100" id="input-agua" placeholder="Ex: 2500"></div>
           </div>
-          <button type="button" class="btn-primary" onclick="alert('Dados Salvos!')">Salvar Registro</button>
+          <button type="button" class="btn-primary" onclick="salvarRegistro()">Salvar Registro</button>
         </form>
       </div>
     </section>
@@ -88,9 +98,17 @@
     <!-- Section: Dieta -->
     <section id="sec-dieta" class="view-section">
       <div class="card">
-        <h2>Plano de Alimentação</h2>
-        <div class="macro-summary"><span>Proteína Total Consumida Hoje:</span><strong id="dieta-proteina-total">0g</strong></div>
-        <div id="meals-container" style="margin-top: 15px;"><p style="color:#94a3b8;">Refeições do dia.</p></div>
+        <h2>Lançar Refeições do Dia</h2>
+        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="input-refeicao-nome" placeholder="Refeição (ex: Almoço)" style="flex: 2; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+            <input type="number" id="input-refeicao-cal" placeholder="Kcal" style="flex: 1; padding: 8px; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 4px;">
+          </div>
+          <button type="button" class="btn-primary" style="padding: 8px;" onclick="adicionarRefeicao()">+ Adicionar Refeição</button>
+        </div>
+        
+        <h3 style="font-size: 0.95rem; color: #38bdf8; margin-bottom: 10px;">Refeições de Hoje:</h3>
+        <div id="lista-refeicoes"></div>
       </div>
     </section>
 
@@ -113,28 +131,11 @@
     </section>
 
     <!-- Section: Checklist -->
-    <section id="sec-checklist" class="view-section">
-      <div class="card">
-        <h2>Checklist Diário</h2>
-        <p style="color:#94a3b8; margin-top: 10px;">Hábitos e metas do dia.</p>
-      </div>
-    </section>
-
+    <section id="sec-checklist" class="view-section"><div class="card"><h2>Checklist Diário</h2></div></section>
     <!-- Section: Evolução -->
-    <section id="sec-evolucao" class="view-section">
-      <div class="card">
-        <h2>Histórico de Evolução</h2>
-        <p style="color:#94a3b8; margin-top: 10px;">Tabela com registros anteriores.</p>
-      </div>
-    </section>
-
+    <section id="sec-evolucao" class="view-section"><div class="card"><h2>Histórico de Evolução</h2></div></section>
     <!-- Section: Gráficos -->
-    <section id="sec-graficos" class="view-section">
-      <div class="card">
-        <h2>Gráfico de Evolução</h2>
-        <p style="color:#94a3b8; margin-top: 10px;">Acompanhamento visual do progresso.</p>
-      </div>
-    </section>
+    <section id="sec-graficos" class="view-section"><div class="card"><h2>Gráfico de Evolução</h2></div></section>
   </main>
 
   <!-- Navegação Inferior -->
@@ -149,41 +150,136 @@
   <!-- Scripts do App -->
   <script src="js/treino.js"></script>
   <script>
+    // Parâmetros do Usuário (Altura: 175cm, Idade: 31)
+    const ALTURA = 175;
+    const IDADE = 31;
+
     function switchTab(tabId) {
       var sections = document.querySelectorAll('.view-section');
-      for (var i = 0; i < sections.length; i++) {
-        sections[i].classList.remove('active');
-      }
+      for (var i = 0; i < sections.length; i++) sections[i].classList.remove('active');
 
       var navItems = document.querySelectorAll('.nav-item');
-      for (var j = 0; j < navItems.length; j++) {
-        navItems[j].classList.remove('active');
-      }
+      for (var j = 0; j < navItems.length; j++) navItems[j].classList.remove('active');
 
       var targetSection = document.getElementById('sec-' + tabId);
-      if (targetSection) {
-        targetSection.classList.add('active');
-      }
+      if (targetSection) targetSection.classList.add('active');
 
       var targetBtn = document.getElementById('nav-' + (tabId === 'dashboard' ? 'dash' : tabId));
-      if (targetBtn) {
-        targetBtn.classList.add('active');
-      }
+      if (targetBtn) targetBtn.classList.add('active');
 
-      // Renderiza os exercícios ao alternar para a aba Treino
       if (tabId === 'treino' && typeof renderTreino === 'function') {
         var selectEl = document.getElementById('select-dia-treino');
-        var dia = selectEl ? selectEl.value : 'Segunda';
-        renderTreino(dia);
+        renderTreino(selectEl ? selectEl.value : 'Segunda');
+      }
+      atualizarDashboard();
+    }
+
+    function salvarRegistro() {
+      const peso = parseFloat(document.getElementById('input-peso').value) || 0;
+      const cintura = document.getElementById('input-cintura').value;
+      const panturrilha = document.getElementById('input-panturrilha').value;
+      const agua = document.getElementById('input-agua').value;
+
+      if (peso > 0) localStorage.setItem('user_peso', peso);
+      if (cintura) localStorage.setItem('user_cintura', cintura);
+      if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
+      if (agua) localStorage.setItem('user_agua', agua);
+
+      alert('Dados registrados com sucesso!');
+      atualizarDashboard();
+      switchTab('dashboard');
+    }
+
+    function adicionarRefeicao() {
+      const nome = document.getElementById('input-refeicao-nome').value;
+      const cal = parseInt(document.getElementById('input-refeicao-cal').value) || 0;
+
+      if (!nome || cal <= 0) { alert('Preencha o nome e as calorias!'); return; }
+
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      refeicoes.push({ nome, cal });
+      localStorage.setItem('user_refeicoes', JSON.stringify(refeicoes));
+
+      document.getElementById('input-refeicao-nome').value = '';
+      document.getElementById('input-refeicao-cal').value = '';
+
+      renderRefeicoes();
+      atualizarDashboard();
+    }
+
+    function removerRefeicao(index) {
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      refeicoes.splice(index, 1);
+      localStorage.setItem('user_refeicoes', JSON.stringify(refeicoes));
+      renderRefeicoes();
+      atualizarDashboard();
+    }
+
+    function renderRefeicoes() {
+      const container = document.getElementById('lista-refeicoes');
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      if (refeicoes.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhuma refeição registrada hoje.</p>';
+        return;
+      }
+      let html = '';
+      refeicoes.forEach((ref, idx) => {
+        html += `<div style="display:flex; justify-space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+          <div><strong style="color:#f8fafc; font-size:0.9rem;">${ref.nome}</strong> - <span style="color:#38bdf8;">${ref.cal} kcal</span></div>
+          <button onclick="removerRefeicao(${idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer;">❌</button>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function calcularGastoTreinosConcluidos() {
+      let concluidos = JSON.parse(localStorage.getItem('user_treinos_concluidos') || '[]');
+      return concluidos.length * 45; // Média de ~45 kcal gastas por exercício/série concluída
+    }
+
+    function atualizarDashboard() {
+      const peso = parseFloat(localStorage.getItem('user_peso')) || 80;
+      const cintura = localStorage.getItem('user_cintura') || '--';
+      const panturrilha = localStorage.getItem('user_panturrilha') || '--';
+      const agua = localStorage.getItem('user_agua') || '0';
+
+      document.getElementById('dash-peso').textContent = peso + ' kg';
+      document.getElementById('dash-cintura').textContent = cintura + ' cm';
+      document.getElementById('dash-panturrilha').textContent = panturrilha + ' cm';
+      document.getElementById('dash-agua-val').textContent = agua + ' / 3000 ml';
+      document.getElementById('dash-agua-bar').style.width = Math.min((parseInt(agua) / 3000) * 100, 100) + '%';
+
+      // Cálculo Basal Harris-Benedict para homens
+      const bmr = Math.round(88.36 + (13.4 * peso) + (4.8 * ALTURA) - (5.7 * IDADE));
+      const gastoTreinos = calcularGastoTreinosConcluidos();
+      const gastoTotal = bmr + gastoTreinos;
+
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      const caloriasIn = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
+
+      const balanco = caloriasIn - gastoTotal;
+
+      document.getElementById('dash-gasto-total').textContent = gastoTotal + ' kcal';
+      document.getElementById('dash-calorias-in').textContent = caloriasIn + ' kcal';
+      
+      const deficitEl = document.getElementById('dash-deficit');
+      if (balanco < 0) {
+        deficitEl.textContent = 'Déficit de ' + Math.abs(balanco) + ' kcal';
+        deficitEl.style.color = '#22c55e'; // Verde para Déficit
+      } else if (balanco > 0) {
+        deficitEl.textContent = 'Superávit de +' + balanco + ' kcal';
+        deficitEl.style.color = '#f43f5e'; // Vermelho para Superávit
+      } else {
+        deficitEl.textContent = '0 kcal (Manutenção)';
+        deficitEl.style.color = '#38bdf8';
       }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
       var dateEl = document.getElementById('current-date-display');
-      if (dateEl) {
-        var hoje = new Date();
-        dateEl.textContent = hoje.toLocaleDateString('pt-BR');
-      }
+      if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR');
+      renderRefeicoes();
+      atualizarDashboard();
       switchTab('dashboard');
     });
   </script>
