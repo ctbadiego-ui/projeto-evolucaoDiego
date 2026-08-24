@@ -1,56 +1,103 @@
-const PLANO_TREINO = {
+const treinosCadastrados = {
   Segunda: {
-    titulo: 'Parte Superior',
-    exercicios: ['Supino Reto', 'Puxada Frontal', 'Desenvolvimento', 'Rosca Direta', 'Tríceps Corda']
+    nome: "TREINO 1 - Peito, Costas, Ombros, Tríceps e Abdômen",
+    exercicios: [
+      { id: "ex_supino_inc", nome: "Supino inclinado com halteres", series: "5 séries", reps: "15, 12, 8, 8, 8 reps", cargaPadrao: "18", descanso: "45s" },
+      { id: "ex_remada_fec", nome: "Remada fechada", series: "5 séries", reps: "15, 12, 8, 8, 8 reps", cargaPadrao: "40", descanso: "45s" },
+      { id: "ex_supino_maq", nome: "Supino máquina", series: "3 séries", reps: "8, 8, 8 reps", cargaPadrao: "70", descanso: "45s" },
+      { id: "ex_elev_lat", nome: "Elevação lateral", series: "3 séries", reps: "8, 8, 8 reps", cargaPadrao: "20", descanso: "45s" },
+      { id: "ex_triceps_fra", nome: "Tríceps francês", series: "3 séries", reps: "8, 8, 8 reps", cargaPadrao: "24", descanso: "45s" },
+      { id: "ex_abd_supra", nome: "Abdominal supra banco declinado", series: "3 séries", reps: "10, 10, 10 reps", cargaPadrao: "10", descanso: "45s" }
+    ]
   },
   Terca: {
-    titulo: 'Parte Inferior',
-    exercicios: ['Hack Squat', 'Leg Press', 'Cadeira Extensora', 'Mesa Flexora', 'Gêmeos em Pé (Panturrilha)']
+    nome: "TREINO 2 - Perna e Inferiores",
+    exercicios: [
+      { id: "ex_terca_1", nome: "Treino em breve", series: "-", reps: "-", cargaPadrao: "0", descanso: "-" }
+    ]
   },
   Quarta: {
-    titulo: 'Cardio',
-    exercicios: ['Esteira 5km', 'Caminhada Inclinada (15 min)', 'Abdominais']
+    nome: "TREINO 3 - Cardio",
+    exercicios: [
+      { id: "ex_esteira", nome: "Esteira Intervalado", series: "30' - 40'", reps: "2' Caminhada / 3' Corrida", cargaPadrao: "0", descanso: "1s" },
+      { id: "ex_eliptico", nome: "Elíptico", series: "10 min", reps: "Ritmo constante", cargaPadrao: "0", descanso: "1s" }
+    ]
   },
   Quinta: {
-    titulo: 'Superior + Abdômen',
-    exercicios: ['Supino Inclinado', 'Remada Curvada', 'Elevação Lateral', 'Prancha Abdominal']
+    nome: "TREINO 4 - Superior, Ombros e Abdômen",
+    exercicios: [
+      { id: "ex_puxada_fre", nome: "Puxada frente na máquina", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_supino_inc_q", nome: "Supino inclinado", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_remada_abe", nome: "Remada aberta (pronada)", series: "3 séries", reps: "8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_encolhimento", nome: "Encolhimento com halteres", series: "3 séries", reps: "8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_rosca_banco", nome: "Rosca com halteres no banco inclinado", series: "3 séries", reps: "8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_abd_infra", nome: "Abdominal infra solo (completo)", series: "3 séries", reps: "10-15, 10-15, 10-15", cargaPadrao: "0", descanso: "45s" }
+    ]
   },
   Sexta: {
-    titulo: 'Inferior + Bicicleta',
-    exercicios: ['Agachamento Livre', 'Stiff', 'Leg Press', 'Bicicleta Ergométrica (20 min)']
+    nome: "TREINO 5 - Pernas, Glúteos e Cardio Bike",
+    exercicios: [
+      { id: "ex_stiff", nome: "Stiff com barra", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_leg_press", nome: "Leg press", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_flexor", nome: "Flexor", series: "3 séries", reps: "8-12, 8-12, 8-12", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_adutor", nome: "Adutor (com 10\" Isometria)", series: "3 séries", reps: "8-12 + 10\" iso", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_pantu_leg", nome: "Panturrilha leg press", series: "4 séries", reps: "10-15, 10-15, 10-15, 10-15", cargaPadrao: "0", descanso: "45s" },
+      { id: "ex_bike", nome: "Intervalado na Bike (Sugestão)", series: "3-4x", reps: "2' Sentado / 1' Em pé", cargaPadrao: "0", descanso: "60s" }
+    ]
   }
 };
 
-function renderTreino(diaSelected) {
+function renderTreino(dia) {
   const container = document.getElementById('exercises-list');
-  const title = document.getElementById('treino-titulo');
-  container.innerHTML = '';
+  const tituloEl = document.getElementById('treino-titulo');
+  
+  if (!container) return;
 
-  const plano = PLANO_TREINO[diaSelected] || { titulo: 'Descanso', exercicios: [] };
-  title.innerText = plano.titulo;
+  const treino = treinosCadastrados[dia] || treinosCadastrados['Segunda'];
 
-  const today = getTodayString();
-  const status = getStorageData(STORAGE_KEYS.TREINO_STATUS, {});
-  const statusHoje = status[today] || {};
+  if (tituloEl) {
+    tituloEl.textContent = treino.nome;
+  }
 
-  plano.exercicios.forEach((ex, idx) => {
-    const itemKey = `${diaSelected}_${idx}`;
-    const checked = statusHoje[itemKey] ? 'checked' : '';
+  let html = '';
+  treino.exercicios.forEach((ex, index) => {
+    // Busca a carga salva anteriormente no navegador ou usa a padrão
+    const cargaSalva = localStorage.getItem('carga_' + ex.id) || ex.cargaPadrao;
 
-    const div = document.createElement('div');
-    div.className = 'check-item';
-    div.innerHTML = `
-      <input type="checkbox" id="ex_${idx}" ${checked} onchange="toggleTreinoEx('${itemKey}', this.checked)">
-      <label for="ex_${idx}">${ex}</label>
+    html += `
+      <div class="card" style="margin-bottom: 12px; background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <strong style="color: #38bdf8; font-size: 0.95rem;">${index + 1}. ${ex.nome}</strong>
+          <span style="font-size: 0.75rem; background: #334155; padding: 2px 8px; border-radius: 4px; color: #94a3b8;">⏱️ ${ex.descanso}</span>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 0.85rem; color: #f8fafc;">🔁 <strong>${ex.series}</strong></span>
+          
+          <!-- Campo interativo para digitar e salvar a carga -->
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <label style="font-size: 0.8rem; color: #94a3b8;">🏋️ Carga (Kg):</label>
+            <input type="number" step="0.5" value="${cargaSalva}" 
+                   onchange="salvarCarga('${ex.id}', this.value)"
+                   style="width: 65px; padding: 4px 6px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 4px; text-align: center;">
+          </div>
+        </div>
+
+        <div style="font-size: 0.8rem; color: #94a3b8;">
+          Repetições: ${ex.reps}
+        </div>
+      </div>
     `;
-    container.appendChild(div);
   });
+
+  container.innerHTML = html;
 }
 
-function toggleTreinoEx(key, isChecked) {
-  const today = getTodayString();
-  const status = getStorageData(STORAGE_KEYS.TREINO_STATUS, {});
-  if (!status[today]) status[today] = {};
-  status[today][key] = isChecked;
-  setStorageData(STORAGE_KEYS.TREINO_STATUS, status);
+// Salva a nova carga no armazenamento do celular/navegador
+function salvarCarga(exercicioId, valor) {
+  localStorage.setItem('carga_' + exercicioId, valor);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTreino('Segunda');
+});
