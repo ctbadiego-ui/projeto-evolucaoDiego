@@ -1,0 +1,32 @@
+function updateDashboard() {
+  const today = getTodayString();
+  const registros = getStorageData(STORAGE_KEYS.REGISTROS, {});
+  const regHoje = registros[today] || {};
+
+  document.getElementById('dash-peso').innerText = regHoje.peso ? `${regHoje.peso} kg` : '-- kg';
+  document.getElementById('dash-cintura').innerText = regHoje.cintura ? `${regHoje.cintura} cm` : '-- cm';
+  document.getElementById('dash-panturrilha').innerText = regHoje.panturrilha ? `${regHoje.panturrilha} cm` : '-- cm';
+
+  const aguaVal = regHoje.agua || 0;
+  document.getElementById('dash-agua-val').innerText = `${aguaVal} / 3000 ml`;
+  const pctAgua = Math.min(100, Math.round((aguaVal / 3000) * 100));
+  document.getElementById('dash-agua-bar').style.width = `${pctAgua}%`;
+
+  const dias = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
+  const dayName = dias[new Date().getDay()];
+  const nomesTreino = {
+    'Segunda': 'Parte Superior',
+    'Terca': 'Parte Inferior',
+    'Quarta': 'Cardio',
+    'Quinta': 'Superior + Abdômen',
+    'Sexta': 'Inferior + Bicicleta',
+    'Sabado': 'Descanso Ativo',
+    'Domingo': 'Descanso'
+  };
+  document.getElementById('dash-treino-nome').innerText = nomesTreino[dayName] || 'Descanso';
+
+  if (window.calcularProteinaTotal) {
+    const totalProt = window.calcularProteinaTotal();
+    document.getElementById('dash-proteina').innerText = `${totalProt}g / 160g`;
+  }
+}
