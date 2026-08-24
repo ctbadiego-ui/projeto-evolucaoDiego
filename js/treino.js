@@ -12,9 +12,7 @@ const treinosCadastrados = {
   },
   Terca: {
     nome: "TREINO 2 - Perna e Inferiores",
-    exercicios: [
-      { id: "ex_terca_1", nome: "Treino em breve", series: "-", reps: "-", cargaPadrao: "0", descanso: "-" }
-    ]
+    exercicios: [{ id: "ex_terca_1", nome: "Treino em breve", series: "-", reps: "-", cargaPadrao: "0", descanso: "-" }]
   },
   Quarta: {
     nome: "TREINO 3 - Cardio",
@@ -50,31 +48,30 @@ const treinosCadastrados = {
 function renderTreino(dia) {
   const container = document.getElementById('exercises-list');
   const tituloEl = document.getElementById('treino-titulo');
-  
   if (!container) return;
 
   const treino = treinosCadastrados[dia] || treinosCadastrados['Segunda'];
+  if (tituloEl) tituloEl.textContent = treino.nome;
 
-  if (tituloEl) {
-    tituloEl.textContent = treino.nome;
-  }
+  let concluidos = JSON.parse(localStorage.getItem('user_treinos_concluidos') || '[]');
 
   let html = '';
   treino.exercicios.forEach((ex, index) => {
-    // Busca a carga salva anteriormente no navegador ou usa a padrão
     const cargaSalva = localStorage.getItem('carga_' + ex.id) || ex.cargaPadrao;
+    const isChecked = concluidos.includes(ex.id) ? 'checked' : '';
 
     html += `
       <div class="card" style="margin-bottom: 12px; background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <strong style="color: #38bdf8; font-size: 0.95rem;">${index + 1}. ${ex.nome}</strong>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" ${isChecked} onchange="toggleConcluido('${ex.id}', this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
+            <strong style="color: #38bdf8; font-size: 0.95rem;">${index + 1}. ${ex.nome}</strong>
+          </div>
           <span style="font-size: 0.75rem; background: #334155; padding: 2px 8px; border-radius: 4px; color: #94a3b8;">⏱️ ${ex.descanso}</span>
         </div>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <span style="font-size: 0.85rem; color: #f8fafc;">🔁 <strong>${ex.series}</strong></span>
-          
-          <!-- Campo interativo para digitar e salvar a carga -->
           <div style="display: flex; align-items: center; gap: 4px;">
             <label style="font-size: 0.8rem; color: #94a3b8;">🏋️ Carga (Kg):</label>
             <input type="number" step="0.5" value="${cargaSalva}" 
@@ -82,10 +79,7 @@ function renderTreino(dia) {
                    style="width: 65px; padding: 4px 6px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 4px; text-align: center;">
           </div>
         </div>
-
-        <div style="font-size: 0.8rem; color: #94a3b8;">
-          Repetições: ${ex.reps}
-        </div>
+        <div style="font-size: 0.8rem; color: #94a3b8;">Repetições: ${ex.reps}</div>
       </div>
     `;
   });
@@ -93,11 +87,18 @@ function renderTreino(dia) {
   container.innerHTML = html;
 }
 
-// Salva a nova carga no armazenamento do celular/navegador
+function toggleConcluido(exercicioId, status) {
+  let concluidos = JSON.parse(localStorage.getItem('user_treinos_concluidos') || '[]');
+  if (status) {
+    if (!concluidos.includes(exercicioId)) concluidos.push(exercicioId);
+  } else {
+    concluidos = concluidos.filter(id => id !== exercicioId);
+  }
+  localStorage.setItem('user_treinos_concluidos', JSON.stringify(concluidos));
+}
+
 function salvarCarga(exercicioId, valor) {
   localStorage.setItem('carga_' + exercicioId, valor);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderTreino('Segunda');
-});
+document.addEventListener('DOMContentLoaded', () => { renderTreino('Segunda'); });
