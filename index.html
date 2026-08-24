@@ -48,12 +48,27 @@
           <div class="metric-box highlighted"><span class="label">Proteína</span><span class="value" id="dash-proteina">0g / 160g</span></div>
         </div>
 
-        <!-- Bloco de Controle Calórico e Déficit -->
+        <!-- Bloco de Controle Calórico Detalhado -->
         <div class="kpi-card">
-          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; margin-bottom: 6px;">
-            <span>🔥 Gasto Estimado Total: <strong id="dash-gasto-total" style="color: #f43f5e;">0 kcal</strong></span>
-            <span>🍽️ Consumido: <strong id="dash-calorias-in" style="color: #38bdf8;">0 kcal</strong></span>
+          <div style="font-size: 0.85rem; color: #94a3b8; display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>🫀 Corpo Funcionar (Basal):</span>
+              <strong id="dash-basal" style="color: #cbd5e1;">0 kcal</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🏋️ Exercícios e Treino:</span>
+              <strong id="dash-gasto-treino" style="color: #38bdf8;">0 kcal</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px dashed #334155; padding-top: 4px; margin-top: 2px;">
+              <span>🔥 Gasto Total do Dia:</span>
+              <strong id="dash-gasto-total" style="color: #f43f5e;">0 kcal</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🍽️ Consumido (Dieta):</span>
+              <strong id="dash-calorias-in" style="color: #38bdf8;">0 kcal</strong>
+            </div>
           </div>
+          
           <div style="text-align: center; padding: 8px; background: #0f172a; border-radius: 6px; margin-top: 5px;">
             <span style="font-size: 0.8rem; color: #94a3b8; display: block;">Balanço Calórico (Déficit / Superávit):</span>
             <strong id="dash-deficit" style="font-size: 1.2rem; color: #22c55e;">0 kcal</strong>
@@ -127,6 +142,10 @@
         </div>
         <h3 id="treino-titulo" style="color: #38bdf8; font-size: 1rem; margin-bottom: 12px;">TREINO 1</h3>
         <div id="exercises-list"></div>
+
+        <button type="button" class="btn-primary" style="margin-top: 15px; background: #22c55e;" onclick="enviarTreinoConcluido()">
+          ✅ Finalizar e Registrar Treino
+        </button>
       </div>
     </section>
 
@@ -150,7 +169,6 @@
   <!-- Scripts do App -->
   <script src="js/treino.js"></script>
   <script>
-    // Parâmetros do Usuário (Altura: 175cm, Idade: 31)
     const ALTURA = 175;
     const IDADE = 31;
 
@@ -224,7 +242,7 @@
       }
       let html = '';
       refeicoes.forEach((ref, idx) => {
-        html += `<div style="display:flex; justify-space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 12px; border-radius:6px; margin-bottom:6px;">
           <div><strong style="color:#f8fafc; font-size:0.9rem;">${ref.nome}</strong> - <span style="color:#38bdf8;">${ref.cal} kcal</span></div>
           <button onclick="removerRefeicao(${idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer;">❌</button>
         </div>`;
@@ -232,9 +250,22 @@
       container.innerHTML = html;
     }
 
-    function calcularGastoTreinosConcluidos() {
+    function enviarTreinoConcluido() {
       let concluidos = JSON.parse(localStorage.getItem('user_treinos_concluidos') || '[]');
-      return concluidos.length * 45; // Média de ~45 kcal gastas por exercício/série concluída
+      if (concluidos.length === 0) {
+        alert('Marque pelo menos um exercício concluído antes de registrar!');
+        return;
+      }
+      
+      let totalCalorias = 0;
+      concluidos.forEach(id => {
+        totalCalorias += parseInt(localStorage.getItem('cal_' + id)) || 40;
+      });
+
+      localStorage.setItem('user_calorias_treino_confirmado', totalCalorias);
+      alert(`Treino Registrado com sucesso! +${totalCalorias} kcal somadas ao seu gasto do dia.`);
+      atualizarDashboard();
+      switchTab('dashboard');
     }
 
     function atualizarDashboard() {
@@ -249,26 +280,32 @@
       document.getElementById('dash-agua-val').textContent = agua + ' / 3000 ml';
       document.getElementById('dash-agua-bar').style.width = Math.min((parseInt(agua) / 3000) * 100, 100) + '%';
 
-      // Cálculo Basal Harris-Benedict para homens
+      // Cálculo Basal Harris-Benedict (Gasto só para funcionar)
       const bmr = Math.round(88.36 + (13.4 * peso) + (4.8 * ALTURA) - (5.7 * IDADE));
-      const gastoTreinos = calcularGastoTreinosConcluidos();
-      const gastoTotal = bmr + gastoTreinos;
+      
+      // Gasto de Treino vindo do botão de confirmação
+      const gastoTreino = parseInt(localStorage.getItem('user_calorias_treino_confirmado')) || 0;
+      
+      // Gasto Total = Basal + Treino
+      const gastoTotal = bmr + gastoTreino;
 
       let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
       const caloriasIn = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
 
       const balanco = caloriasIn - gastoTotal;
 
+      document.getElementById('dash-basal').textContent = bmr + ' kcal';
+      document.getElementById('dash-gasto-treino').textContent = gastoTreino + ' kcal';
       document.getElementById('dash-gasto-total').textContent = gastoTotal + ' kcal';
       document.getElementById('dash-calorias-in').textContent = caloriasIn + ' kcal';
       
       const deficitEl = document.getElementById('dash-deficit');
       if (balanco < 0) {
         deficitEl.textContent = 'Déficit de ' + Math.abs(balanco) + ' kcal';
-        deficitEl.style.color = '#22c55e'; // Verde para Déficit
+        deficitEl.style.color = '#22c55e';
       } else if (balanco > 0) {
         deficitEl.textContent = 'Superávit de +' + balanco + ' kcal';
-        deficitEl.style.color = '#f43f5e'; // Vermelho para Superávit
+        deficitEl.style.color = '#f43f5e';
       } else {
         deficitEl.textContent = '0 kcal (Manutenção)';
         deficitEl.style.color = '#38bdf8';
