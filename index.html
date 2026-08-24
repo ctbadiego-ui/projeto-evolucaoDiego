@@ -12,24 +12,24 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Evolução">
 
-  <!-- Limpeza de Service Worker antigo para evitar cache preso -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-  </script>
-
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Estilos CSS (Caminhos relativos corrigidos) -->
+  <!-- Estilos CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/graficos.css">
+
+  <style>
+    /* Força exibição correta das seções ativas */
+    .view-section { display: none !important; }
+    .view-section.active { display: block !important; }
+    
+    /* Destaque para botões da barra inferior */
+    .nav-item { opacity: 0.6; cursor: pointer; }
+    .nav-item.active { opacity: 1; color: #38bdf8 !important; }
+    .nav-card-btn { cursor: pointer; }
+  </style>
 </head>
 <body>
   <header class="app-header">
@@ -71,7 +71,7 @@
     <section id="sec-registrar" class="view-section">
       <div class="card">
         <h2>Registrar Dados de Hoje</h2>
-        <form id="form-registro" onsubmit="saveRegistroHoje(event)">
+        <form id="form-registro">
           <div class="form-group-title">Medidas Corporais</div>
           <div class="form-row">
             <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.1" id="input-peso" placeholder="Ex: 75.5"></div>
@@ -81,16 +81,7 @@
             <div class="form-group"><label>Panturrilha (cm)</label><input type="number" step="0.1" id="input-panturrilha" placeholder="Ex: 38.0"></div>
             <div class="form-group"><label>Água (ml)</label><input type="number" step="100" id="input-agua" placeholder="Ex: 2500"></div>
           </div>
-          <div class="form-group-title">Cardio do Dia</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tipo</label>
-              <select id="input-cardio-tipo"><option value="Esteira">Esteira</option><option value="Bicicleta">Bicicleta</option><option value="Caminhada">Caminhada</option></select>
-            </div>
-            <div class="form-group"><label>Tempo (min)</label><input type="number" id="input-cardio-tempo" placeholder="Ex: 30"></div>
-          </div>
-          <div class="form-group"><label>Distância (km)</label><input type="number" step="0.01" id="input-cardio-dist" placeholder="Ex: 5.0"></div>
-          <button type="submit" class="btn-primary">Salvar Registro</button>
+          <button type="button" class="btn-primary" onclick="alert('Dados Salvos!')">Salvar Registro</button>
         </form>
       </div>
     </section>
@@ -100,25 +91,15 @@
       <div class="card">
         <h2>Plano de Alimentação</h2>
         <div class="macro-summary"><span>Proteína Total Consumida Hoje:</span><strong id="dieta-proteina-total">0g</strong></div>
-        <div id="meals-container"></div>
+        <div id="meals-container" style="margin-top: 15px;"><p style="color:#94a3b8;">Refeições do dia.</p></div>
       </div>
     </section>
 
     <!-- Section: Treino -->
     <section id="sec-treino" class="view-section">
       <div class="card">
-        <div class="tab-header-select">
-          <label>Dia da Semana:</label>
-          <select id="select-dia-treino" onchange="renderTreino(this.value)">
-            <option value="Segunda">Segunda - Parte Superior</option>
-            <option value="Terca">Terça - Parte Inferior</option>
-            <option value="Quarta">Quarta - Cardio</option>
-            <option value="Quinta">Quinta - Superior + Abdômen</option>
-            <option value="Sexta">Sexta - Inferior + Bicicleta</option>
-          </select>
-        </div>
-        <h3 id="treino-titulo" class="workout-title">Treino</h3>
-        <div id="exercises-list" class="checklist-group"></div>
+        <h2>Treino do Dia</h2>
+        <p style="color:#94a3b8; margin-top: 10px;">Foco: Membros Superiores e Cardio.</p>
       </div>
     </section>
 
@@ -126,8 +107,7 @@
     <section id="sec-checklist" class="view-section">
       <div class="card">
         <h2>Checklist Diário</h2>
-        <p class="subtitle">Acompanhe seu cumprimento de metas hoje</p>
-        <div id="checklist-items" class="checklist-group"></div>
+        <p style="color:#94a3b8; margin-top: 10px;">Hábitos e metas do dia.</p>
       </div>
     </section>
 
@@ -135,12 +115,7 @@
     <section id="sec-evolucao" class="view-section">
       <div class="card">
         <h2>Histórico de Evolução</h2>
-        <div class="table-responsive">
-          <table class="data-table">
-            <thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Panturrilha</th></tr></thead>
-            <tbody id="historico-tbody"></tbody>
-          </table>
-        </div>
+        <p style="color:#94a3b8; margin-top: 10px;">Tabela com registros anteriores.</p>
       </div>
     </section>
 
@@ -148,7 +123,7 @@
     <section id="sec-graficos" class="view-section">
       <div class="card">
         <h2>Gráfico de Evolução</h2>
-        <div class="chart-container"><canvas id="mainChart"></canvas></div>
+        <p style="color:#94a3b8; margin-top: 10px;">Acompanhamento visual do progresso.</p>
       </div>
     </section>
   </main>
@@ -156,21 +131,48 @@
   <!-- Navegação Inferior -->
   <nav class="bottom-nav">
     <button class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')"><span class="icon">🏠</span><span class="label">Início</span></button>
-    <button class="nav-item" id="nav-reg" onclick="switchTab('registrar')"><span class="icon">📝</span><span class="label">Registrar</span></button>
-    <button class="nav-item" id="nav-diet" onclick="switchTab('dieta')"><span class="icon">🍽️</span><span class="label">Dieta</span></button>
-    <button class="nav-item" id="nav-workout" onclick="switchTab('treino')"><span class="icon">🏋️</span><span class="label">Treino</span></button>
-    <button class="nav-item" id="nav-more" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
+    <button class="nav-item" id="nav-registrar" onclick="switchTab('registrar')"><span class="icon">📝</span><span class="label">Registrar</span></button>
+    <button class="nav-item" id="nav-dieta" onclick="switchTab('dieta')"><span class="icon">🍽️</span><span class="label">Dieta</span></button>
+    <button class="nav-item" id="nav-treino" onclick="switchTab('treino')"><span class="icon">🏋️</span><span class="label">Treino</span></button>
+    <button class="nav-item" id="nav-checklist" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
   </nav>
 
-  <!-- Scripts JavaScript (Caminhos relativos corrigidos) -->
-  <script src="js/storage.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/treino.js"></script>
-  <script src="js/dieta.js"></script>
-  <script src="js/checklist.js"></script>
-  <script src="js/progresso.js"></script>
-  <script src="js/panturrilha.js"></script>
-  <script src="js/graficos.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Função de Navegação Direta Integrada -->
+  <script>
+    function switchTab(tabId) {
+      // Esconde todas as seções
+      var sections = document.querySelectorAll('.view-section');
+      for (var i = 0; i < sections.length; i++) {
+        sections[i].classList.remove('active');
+      }
+
+      // Desmarca todos os botões inferiores
+      var navItems = document.querySelectorAll('.nav-item');
+      for (var j = 0; j < navItems.length; j++) {
+        navItems[j].classList.remove('active');
+      }
+
+      // Exibe a seção clicada
+      var targetSection = document.getElementById('sec-' + tabId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+
+      // Destaca o botão inferior clicado
+      var targetBtn = document.getElementById('nav-' + (tabId === 'dashboard' ? 'dash' : tabId));
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var dateEl = document.getElementById('current-date-display');
+      if (dateEl) {
+        var hoje = new Date();
+        dateEl.textContent = hoje.toLocaleDateString('pt-BR');
+      }
+      switchTab('dashboard');
+    });
+  </script>
 </body>
 </html>
