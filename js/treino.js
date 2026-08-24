@@ -12,7 +12,14 @@ const treinosCadastrados = {
   },
   Terca: {
     nome: "TREINO 2 - Perna e Inferiores",
-    exercicios: [{ id: "ex_terca_1", nome: "Treino em breve", series: "-", reps: "-", cargaPadrao: "0", descanso: "-", calEstimada: 0 }]
+    exercicios: [
+      { id: "ex_smith_t2", nome: "Agachamento smith", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 (1º e 2º aquecimento)", cargaPadrao: "0", descanso: "45s", calEstimada: 55 },
+      { id: "ex_flexora_t2", nome: "Mesa flexora", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 (1º e 2º aquecimento)", cargaPadrao: "0", descanso: "45s", calEstimada: 45 },
+      { id: "ex_extensor_t2", nome: "Extensor", series: "3 séries", reps: "8-12, 8-12, 8-12 reps", cargaPadrao: "0", descanso: "45s", calEstimada: 35 },
+      { id: "ex_abdutor_t2", nome: "Abdutor", series: "3 séries", reps: "8-12 + 10\" Isometria", cargaPadrao: "0", descanso: "45s", calEstimada: 30 },
+      { id: "ex_pantu_t2", nome: "Panturrilha máquina (Sentado)", series: "4 séries", reps: "10-15, 10-15, 10-15, 10-15 reps", cargaPadrao: "0", descanso: "45s", calEstimada: 30 },
+      { id: "ex_bike_t2", nome: "Intervalado na Bike (Sugestão)", series: "3-4x", reps: "2' Sentado moderado / 1' Em pé pesado", cargaPadrao: "0", tempoPadrao: "15", descanso: "45s", isCardioTempo: true, calPorMinuto: 8 }
+    ]
   },
   Quarta: {
     nome: "TREINO 3 - Cardio",
