@@ -21,11 +21,11 @@
   <link rel="stylesheet" href="css/graficos.css">
 
   <style>
-    /* Força exibição correta das seções ativas */
+    /* Controla a exibição das telas */
     .view-section { display: none !important; }
     .view-section.active { display: block !important; }
     
-    /* Destaque para botões da barra inferior */
+    /* Estilo da barra inferior */
     .nav-item { opacity: 0.6; cursor: pointer; }
     .nav-item.active { opacity: 1; color: #38bdf8 !important; }
     .nav-card-btn { cursor: pointer; }
@@ -54,7 +54,6 @@
           <div class="progress-label"><span>Água Consumida</span><span id="dash-agua-val">0 / 3000 ml</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="dash-agua-bar" style="width: 0%;"></div></div>
         </div>
-        <div class="today-workout-badge"><span>Treino de Hoje:</span><strong id="dash-treino-nome">Carregando...</strong></div>
       </div>
 
       <div class="quick-nav-grid">
@@ -98,8 +97,18 @@
     <!-- Section: Treino -->
     <section id="sec-treino" class="view-section">
       <div class="card">
-        <h2>Treino do Dia</h2>
-        <p style="color:#94a3b8; margin-top: 10px;">Foco: Membros Superiores e Cardio.</p>
+        <div style="margin-bottom: 15px;">
+          <label style="color: #94a3b8; font-size: 0.85rem; display: block; margin-bottom: 5px;">Selecione o Dia:</label>
+          <select id="select-dia-treino" onchange="renderTreino(this.value)" style="width: 100%; padding: 10px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; font-size: 0.9rem;">
+            <option value="Segunda">Segunda - Treino 1</option>
+            <option value="Terca">Terça - Treino 2</option>
+            <option value="Quarta">Quarta - Treino 3 (Cardio)</option>
+            <option value="Quinta">Quinta - Treino 4</option>
+            <option value="Sexta">Sexta - Treino 5</option>
+          </select>
+        </div>
+        <h3 id="treino-titulo" style="color: #38bdf8; font-size: 1rem; margin-bottom: 12px;">TREINO 1</h3>
+        <div id="exercises-list"></div>
       </div>
     </section>
 
@@ -137,31 +146,35 @@
     <button class="nav-item" id="nav-checklist" onclick="switchTab('checklist')"><span class="icon">☑️</span><span class="label">Hábitos</span></button>
   </nav>
 
-  <!-- Função de Navegação Direta Integrada -->
+  <!-- Scripts do App -->
+  <script src="js/treino.js"></script>
   <script>
     function switchTab(tabId) {
-      // Esconde todas as seções
       var sections = document.querySelectorAll('.view-section');
       for (var i = 0; i < sections.length; i++) {
         sections[i].classList.remove('active');
       }
 
-      // Desmarca todos os botões inferiores
       var navItems = document.querySelectorAll('.nav-item');
       for (var j = 0; j < navItems.length; j++) {
         navItems[j].classList.remove('active');
       }
 
-      // Exibe a seção clicada
       var targetSection = document.getElementById('sec-' + tabId);
       if (targetSection) {
         targetSection.classList.add('active');
       }
 
-      // Destaca o botão inferior clicado
       var targetBtn = document.getElementById('nav-' + (tabId === 'dashboard' ? 'dash' : tabId));
       if (targetBtn) {
         targetBtn.classList.add('active');
+      }
+
+      // Renderiza os exercícios ao alternar para a aba Treino
+      if (tabId === 'treino' && typeof renderTreino === 'function') {
+        var selectEl = document.getElementById('select-dia-treino');
+        var dia = selectEl ? selectEl.value : 'Segunda';
+        renderTreino(dia);
       }
     }
 
