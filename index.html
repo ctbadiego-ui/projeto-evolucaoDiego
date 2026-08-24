@@ -106,7 +106,7 @@
       </div>
     </section>
 
-    <!-- Section: Dieta (Com cálculo de Proteína e Kcal por Gramas) -->
+    <!-- Section: Dieta -->
     <section id="sec-dieta" class="view-section">
       <div class="card">
         <h2>Controle de Alimentação</h2>
@@ -136,7 +136,7 @@
           </div>
         </div>
 
-        <!-- Cadastrar em 100g (Kcal + Proteína) -->
+        <!-- Cadastrar em 100g -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; margin-bottom: 15px;">
           <h3 style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
@@ -147,6 +147,12 @@
             </div>
           </div>
           <button type="button" class="btn-primary" style="padding: 6px; font-size: 0.8rem; background: #38bdf8;" onclick="cadastrarAlimentoBiblioteca()">+ Salvar na Biblioteca</button>
+        </div>
+
+        <!-- Gerenciar Alimentos da Biblioteca -->
+        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
+          <h3 style="font-size: 0.85rem; color: #f43f5e; margin-bottom: 8px;">🗑️ Gerenciar Biblioteca (Excluir Alimentos Salvos)</h3>
+          <div id="lista-biblioteca-excluir"></div>
         </div>
         
         <!-- Lista do Dia -->
@@ -220,6 +226,7 @@
 
       if (tabId === 'dieta') {
         atualizarSelectAlimentosSalvos();
+        renderGerenciarBiblioteca();
       }
 
       atualizarDashboard();
@@ -259,8 +266,9 @@
       document.getElementById('input-nova-cal').value = '';
       document.getElementById('input-nova-prot').value = '';
 
-      alert(`Alimento "${nome}" salvo (${cal100g} kcal e ${prot100g}g prot por 100g)!`);
+      alert(`Alimento "${nome}" salvo com sucesso!`);
       atualizarSelectAlimentosSalvos();
+      renderGerenciarBiblioteca();
     }
 
     function atualizarSelectAlimentosSalvos() {
@@ -282,6 +290,38 @@
 
       selectEl.innerHTML = html;
       calcularPreviewCalorias();
+    }
+
+    function renderGerenciarBiblioteca() {
+      const container = document.getElementById('lista-biblioteca-excluir');
+      if (!container) return;
+
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      if (biblioteca.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem;">Nenhum alimento salvo na biblioteca.</p>';
+        return;
+      }
+
+      let html = '';
+      biblioteca.forEach((item, idx) => {
+        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:4px; margin-bottom:4px;">
+          <span style="font-size:0.85rem; color:#f8fafc;">${item.nome} <small style="color:#94a3b8;">(${item.cal100g} kcal/100g)</small></span>
+          <button onclick="excluirAlimentoBiblioteca(${idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-weight:bold;">❌ Excluir</button>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function excluirAlimentoBiblioteca(index) {
+      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      const alimento = biblioteca[index];
+      
+      if (confirm(`Deseja remover "${alimento.nome}" da sua biblioteca?`)) {
+        biblioteca.splice(index, 1);
+        localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(biblioteca));
+        atualizarSelectAlimentosSalvos();
+        renderGerenciarBiblioteca();
+      }
     }
 
     function calcularPreviewCalorias() {
@@ -400,7 +440,6 @@
       const caloriasIn = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
       const proteinaIn = refeicoes.reduce((acc, curr) => acc + (curr.prot || 0), 0);
 
-      // Atualiza a barra de proteína no topo do Início
       document.getElementById('dash-proteina').textContent = `${proteinaIn.toFixed(1)}g / 160g`;
 
       const balanco = caloriasIn - gastoTotal;
@@ -427,6 +466,7 @@
       var dateEl = document.getElementById('current-date-display');
       if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR');
       atualizarSelectAlimentosSalvos();
+      renderGerenciarBiblioteca();
       renderRefeicoes();
       atualizarDashboard();
       switchTab('dashboard');
