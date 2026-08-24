@@ -1,0 +1,76 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  document.getElementById('current-date-display').innerText = d.toLocaleDateString('pt-BR');
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('SW ativo', reg))
+      .catch(err => console.error('Erro SW', err));
+  }
+
+  updateDashboard();
+  renderDieta();
+  renderChecklist();
+  
+  const dias = ['Domingo', 'Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
+  let currentDay = dias[new Date().getDay()];
+  if (!PLANO_TREINO[currentDay]) currentDay = 'Segunda';
+  document.getElementById('select-dia-treino').value = currentDay;
+  renderTreino(currentDay);
+});
+
+function switchTab(tabId) {
+  document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+  const targetSection = document.getElementById(`sec-${tabId}`);
+  if (targetSection) targetSection.classList.add('active');
+
+  if (tabId === 'dashboard') {
+    document.getElementById('nav-dash').classList.add('active');
+    updateDashboard();
+  } else if (tabId === 'registrar') {
+    document.getElementById('nav-reg').classList.add('active');
+  } else if (tabId === 'dieta') {
+    document.getElementById('nav-diet').classList.add('active');
+    renderDieta();
+  } else if (tabId === 'treino') {
+    document.getElementById('nav-workout').classList.add('active');
+  } else if (tabId === 'checklist') {
+    document.getElementById('nav-more').classList.add('active');
+    renderChecklist();
+  } else if (tabId === 'evolucao') {
+    renderHistorico();
+  } else if (tabId === 'graficos') {
+    renderGraficos();
+  }
+}
+
+function saveRegistroHoje(e) {
+  e.preventDefault();
+
+  const today = getTodayString();
+  const registros = getStorageData(STORAGE_KEYS.REGISTROS, {});
+
+  const peso = parseFloat(document.getElementById('input-peso').value);
+  const cintura = parseFloat(document.getElementById('input-cintura').value);
+  const panturrilha = parseFloat(document.getElementById('input-panturrilha').value);
+  const agua = parseInt(document.getElementById('input-agua').value);
+
+  const cardioTipo = document.getElementById('input-cardio-tipo').value;
+  const cardioTempo = parseInt(document.getElementById('input-cardio-tempo').value);
+  const cardioDist = parseFloat(document.getElementById('input-cardio-dist').value);
+
+  registros[today] = {
+    ...registros[today],
+    ...(peso ? { peso } : {}),
+    ...(cintura ? { cintura } : {}),
+    ...(panturrilha ? { panturrilha } : {}),
+    ...(agua ? { agua } : {}),
+    cardio: { tipo: cardioTipo, tempo: cardioTempo, dist: cardioDist }
+  };
+
+  setStorageData(STORAGE_KEYS.REGISTROS, registros);
+  alert('Registro salvo com sucesso!');
+  switchTab('dashboard');
+}
