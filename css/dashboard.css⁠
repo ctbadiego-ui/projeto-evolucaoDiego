@@ -1,93 +1,11 @@
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.metric-box {
-  background: #0f172a;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #334155;
-  display: flex;
-  flex-direction: column;
-}
-
-.metric-box.highlighted {
-  border-color: #38bdf8;
-}
-
-.metric-box .label {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
-
-.metric-box .value {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #f8fafc;
-  margin-top: 4px;
-}
-
-.progress-container {
-  margin-bottom: 16px;
-}
-
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-bottom: 6px;
-}
-
-.progress-bar-bg {
-  background: #0f172a;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress-bar-fill {
-  background: #38bdf8;
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-.today-workout-badge {
-  background: #0f172a;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  display: flex;
-  justify-content: space-between;
-  border-left: 4px solid #38bdf8;
-}
-
-.quick-nav-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.nav-card-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 14px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #f8fafc;
-}
-
-.nav-card-btn .icon {
-  font-size: 1.5rem;
-  margin-bottom: 6px;
-}
-
-.nav-card-btn .title {
-  font-size: 0.75rem;
-  font-weight: bold;
-}
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.metric-box { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; }
+.metric-box .label { display: block; color: #94a3b8; font-size: 0.75rem; }
+.metric-box .value { font-size: 1.1rem; font-weight: bold; color: #f8fafc; margin-top: 4px; display: block; }
+.metric-box.highlighted { border-color: #38bdf8; }
+.progress-container { margin-top: 15px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
+.progress-bar-bg { background: #0f172a; height: 8px; border-radius: 4px; overflow: hidden; }
+.progress-bar-fill { background: #38bdf8; height: 100%; transition: width 0.3s; }
+.quick-nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.nav-card-btn { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px 5px; color: #f8fafc; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
