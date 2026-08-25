@@ -1,64 +1,62 @@
 // ==========================================
-// DADOS DOS TREINOS (SEGUNDA A SEXTA)
+// DADOS DOS TREINOS (TREINO 1 AO TREINO 5)
 // ==========================================
 const treinosDados = {
   Segunda: {
-    titulo: "TREINO 1 - Peito, Ombro e Tríceps",
+    titulo: "TREINO 1 - Peito, Costas, Ombro e Tríceps",
     exercicios: [
-      { id: "p1", nome: "Supino Inclinado c/ Halteres", series: "4 séries", reps: "10-12 reps", cargaPadrao: 20 },
-      { id: "p2", nome: "Supino Reto c/ Barra ou Máquina", series: "4 séries", reps: "8-10 reps", cargaPadrao: 30 },
-      { id: "p3", nome: "Crossover / Crucifixo na Polia", series: "3 séries", reps: "12-15 reps", cargaPadrao: 15 },
-      { id: "o1", nome: "Desenvolvimento c/ Halteres", series: "4 séries", reps: "10-12 reps", cargaPadrao: 14 },
-      { id: "o2", nome: "Elevação Lateral na Polia ou Halter", series: "4 séries", reps: "12-15 reps", cargaPadrao: 8 },
-      { id: "t1", nome: "Tríceps Corda na Polia", series: "4 séries", reps: "12-15 reps", cargaPadrao: 25 },
-      { id: "t2", nome: "Tríceps Testa ou Francês", series: "3 séries", reps: "10-12 reps", cargaPadrao: 12 }
+      { id: "t1_sup_inc", nome: "Supino inclinado com halteres", series: "5 séries", reps: "15, 12, 8, 8, 8 reps", cargaPadrao: 18 },
+      { id: "t1_rem_fec", nome: "Remada fechada", series: "5 séries", reps: "15, 12, 8, 8, 8 reps", cargaPadrao: 40 },
+      { id: "t1_sup_maq", nome: "Supino máquina", series: "3 séries", reps: "8 reps", cargaPadrao: 70 },
+      { id: "t1_ele_lat", nome: "Elevação lateral", series: "3 séries", reps: "8 reps", cargaPadrao: 20 },
+      { id: "t1_tri_fra", nome: "Tríceps francês", series: "3 séries", reps: "8 reps", cargaPadrao: 24 },
+      { id: "t1_abd_sup", nome: "Abdominal supra banco declinado", series: "3 séries", reps: "10 reps", cargaPadrao: 10 }
     ]
   },
   Terca: {
-    titulo: "TREINO 2 - Costas, Bíceps e Antebraço",
+    titulo: "TREINO 2 - Pernas (Foco Quadríceps e Posteriores)",
     exercicios: [
-      { id: "c1", nome: "Puxada Frontal (Pegada Aberta)", series: "4 séries", reps: "10-12 reps", cargaPadrao: 45 },
-      { id: "c2", nome: "Remada Curvada ou Remada Baixa", series: "4 séries", reps: "8-10 reps", cargaPadrao: 40 },
-      { id: "c3", nome: "Remada Unilateral c/ Halter (Serrote)", series: "3 séries", reps: "10-12 reps", cargaPadrao: 22 },
-      { id: "b1", nome: "Rosca Direta c/ Barra W ou Polia", series: "4 séries", reps: "10-12 reps", cargaPadrao: 12 },
-      { id: "b2", nome: "Rosca Martelo c/ Halteres", series: "3 séries", reps: "12 reps", cargaPadrao: 10 },
-      { id: "a1", nome: "Rosca Inversa ou Inclinada", series: "3 séries", reps: "12-15 reps", cargaPadrao: 8 },
-      { id: "k1", nome: "Cardio - Bicicleta (Ergométrica)", series: "1 sessão", reps: "20 min", cargaPadrao: 0 }
+      { id: "t2_aga_smi", nome: "Agachamento Smith (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 40 },
+      { id: "t2_mes_fle", nome: "Mesa flexora (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 30 },
+      { id: "t2_extensor", nome: "Extensor", series: "3 séries", reps: "8-12 reps", cargaPadrao: 35 },
+      { id: "t2_abdutor", nome: "Abdutor (10\" Isometria)", series: "3 séries", reps: "8-12+10\" reps", cargaPadrao: 40 },
+      { id: "t2_pan_maq", nome: "Panturrilha máquina (Sentado)", series: "4 séries", reps: "10-15 reps", cargaPadrao: 30 },
+      { id: "t2_bik_int", nome: "Cardio - Intervalado na Bike", series: "3-4X", reps: "2' sent. mod. / 1' em pé pes.", cargaPadrao: 0 }
     ]
   },
   Quarta: {
-    titulo: "TREINO 3 - Cardio & Core / Descanso Ativo",
+    titulo: "TREINO 3 - Cardio Especial",
     exercicios: [
-      { id: "cardio1", nome: "Bicicleta Ergométrica (Ritmo Moderado)", series: "1 sessão", reps: "40 min", cargaPadrao: 0 },
-      { id: "abs1", nome: "Abdominal Infra na Barra / Chão", series: "4 séries", reps: "15-20 reps", cargaPadrao: 0 },
-      { id: "abs2", nome: "Prancha Abdominal", series: "4 séries", reps: "45 seg", cargaPadrao: 0 }
+      { id: "t3_est_int", nome: "Esteira Intervalado (2' caminhada / 3' corrida)", series: "1 sessão", reps: "30'-40' min", cargaPadrao: 0 },
+      { id: "t3_eliptico", nome: "Elíptico", series: "1 sessão", reps: "10' min", cargaPadrao: 0 }
     ]
   },
   Quinta: {
-    titulo: "TREINO 4 - Pernas Completo",
+    titulo: "TREINO 4 - Tronco & Superior Completo",
     exercicios: [
-      { id: "l1", nome: "Agachamento Livre ou Leg Press 45°", series: "4 séries", reps: "8-10 reps", cargaPadrao: 80 },
-      { id: "l2", nome: "Cadeira Extensora", series: "4 séries", reps: "12-15 reps", cargaPadrao: 35 },
-      { id: "l3", nome: "Mesa Flexora / Cadeira Flexora", series: "4 séries", reps: "10-12 reps", cargaPadrao: 30 },
-      { id: "l4", nome: "Stiff c/ Halteres ou Barra", series: "3 séries", reps: "10-12 reps", cargaPadrao: 16 },
-      { id: "p1_leg", nome: "Gêmeos / Panturrilha no Leg ou em Pé", series: "5 séries", reps: "15-20 reps", cargaPadrao: 50 }
+      { id: "t4_pux_fre", nome: "Puxada frente na máquina (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 45 },
+      { id: "t4_sup_inc", nome: "Supino inclinado (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 20 },
+      { id: "t4_rem_abe", nome: "Remada aberta (Pronada)", series: "3 séries", reps: "8-12 reps", cargaPadrao: 35 },
+      { id: "t4_enc_hal", nome: "Encolhimento com halteres", series: "3 séries", reps: "8-12 reps", cargaPadrao: 18 },
+      { id: "t4_ros_inc", nome: "Rosca com halteres no banco inclinado", series: "3 séries", reps: "8-12 reps", cargaPadrao: 12 },
+      { id: "t4_abd_inf", nome: "Abdominal infra solo (Completo)", series: "3 séries", reps: "10-15 reps", cargaPadrao: 0 }
     ]
   },
   Sexta: {
-    titulo: "TREINO 5 - Braços & Ombro (Foco Hipertrofia)",
+    titulo: "TREINO 5 - Pernas & Glúteos / Cardio",
     exercicios: [
-      { id: "s1", nome: "Desenvolvimento Máquina / Halter", series: "4 séries", reps: "10-12 reps", cargaPadrao: 16 },
-      { id: "s2", nome: "Elevação Lateral", series: "4 séries", reps: "12-15 reps", cargaPadrao: 10 },
-      { id: "s3", nome: "Rosca Simultânea c/ Halteres", series: "4 séries", reps: "10-12 reps", cargaPadrao: 12 },
-      { id: "s4", nome: "Tríceps Pulley V / Corda", series: "4 séries", reps: "12-15 reps", cargaPadrao: 30 },
-      { id: "s5", nome: "Rosca Scott ou Banco 45°", series: "3 séries", reps: "10-12 reps", cargaPadrao: 10 },
-      { id: "s6", nome: "Tríceps Coice ou Mergulho", series: "3 séries", reps: "12 reps", cargaPadrao: 8 }
+      { id: "t5_sti_bar", nome: "Stiff com barra (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 30 },
+      { id: "t5_leg_pre", nome: "Leg press (2 aquec.)", series: "5 séries", reps: "15, 12, 8-12, 8-12, 8-12 reps", cargaPadrao: 80 },
+      { id: "t5_flexor",  nome: "Flexor", series: "3 séries", reps: "8-12 reps", cargaPadrao: 30 },
+      { id: "t5_adutor",  nome: "Adutor (10\" Isometria)", series: "3 séries", reps: "8-12+10\" reps", cargaPadrao: 35 },
+      { id: "t5_pan_leg", nome: "Panturrilha leg press", series: "4 séries", reps: "10-15 reps", cargaPadrao: 50 },
+      { id: "t5_bik_int", nome: "Cardio - Intervalado na Bike", series: "3-4X", reps: "2' sent. mod. / 1' em pé pes.", cargaPadrao: 0 }
     ]
   }
 };
 
 // ==========================================
-// EXTRAIR NÚMERO DE SÉRIES E REPETIÇÕES
+// FUNÇÕES AUXILIARES DE CÁLCULO
 // ==========================================
 function parseNumSeries(str) {
   const match = str.match(/\d+/);
@@ -68,10 +66,9 @@ function parseNumSeries(str) {
 function parseNumReps(str) {
   const matches = str.match(/\d+/g);
   if (!matches) return 1;
-  if (matches.length >= 2) {
-    return (parseInt(matches[0]) + parseInt(matches[1])) / 2;
-  }
-  return parseInt(matches[0]);
+  let soma = 0;
+  matches.forEach(m => soma += parseInt(m));
+  return Math.round(soma / matches.length);
 }
 
 // ==========================================
@@ -105,7 +102,7 @@ function renderTreino(dia) {
           <span>${ex.series} × ${ex.reps}</span>
           
           <div style="display: flex; align-items: center; gap: 4px;">
-            <label style="font-size: 0.75rem; color: #64748b;">Carga por série:</label>
+            <label style="font-size: 0.75rem; color: #64748b;">Carga/Série:</label>
             <input type="number" id="carga_${ex.id}" value="${cargaSalva}" onchange="salvarCarga('${ex.id}', this.value, '${diaSelec}')"
                    style="width: 60px; padding: 4px 6px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 4px; text-align: center;">
             <span style="font-size: 0.75rem; color: #64748b;">kg</span>
@@ -115,10 +112,9 @@ function renderTreino(dia) {
     `;
   });
 
-  // Card com o Volume Total
   html += `
     <div style="background: #1e293b; padding: 12px; border-radius: 8px; border: 1px solid #38bdf8; margin-top: 15px; text-align: center;">
-      <span style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 2px;">Carga Total Tonelada (Volume do Treino Concluído):</span>
+      <span style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 2px;">Carga Total Levantada (Volume Concluído):</span>
       <strong id="volume-total-treino" style="font-size: 1.2rem; color: #38bdf8;">0 kg</strong>
     </div>
   `;
@@ -153,17 +149,11 @@ function calcularVolumeTotalTreino(dia) {
   labelTotal.innerText = Math.round(tonelagemTotal).toLocaleString('pt-BR') + ' kg';
 }
 
-// ==========================================
-// SALVAR CARGA E RECALCULAR VOLUME
-// ==========================================
 function salvarCarga(id, valor, dia) {
   localStorage.setItem('carga_' + id, valor);
   calcularVolumeTotalTreino(dia);
 }
 
-// ==========================================
-// MARCAR / DESMARCAR EXERCÍCIO
-// ==========================================
 function toggleExercicio(id, dia) {
   let concluidos = JSON.parse(localStorage.getItem('user_treinos_concluidos') || '[]');
   
