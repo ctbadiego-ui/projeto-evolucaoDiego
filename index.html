@@ -334,7 +334,75 @@
       atualizarDashboard();
     }
 
-    /* LÓGICA DO HISTÓRICO DE ÁGUA COM HORÁRIO */
+    /* RECUPERAÇÃO INTELIGENTE DE ALIMENTOS */
+    function obterBibliotecaCompleta() {
+      let b1 = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let b2 = JSON.parse(localStorage.getItem('biblioteca_alimentos') || '[]');
+      let b3 = JSON.parse(localStorage.getItem('alimentos_salvos') || '[]');
+
+      let unificada = [...b1];
+
+      [...b2, ...b3].forEach(item => {
+        if (item && item.nome && !unificada.some(b => b.nome === item.nome)) {
+          unificada.push(item);
+        }
+      });
+
+      if (unificada.length > b1.length) {
+        localStorage.setItem('user_biblioteca_alimentos', JSON.stringify(unificada));
+      }
+
+      return unificada;
+    }
+
+    function atualizarSelectAlimentosSalvos() {
+      const selectEl = document.getElementById('select-alimento-salvo');
+      if (!selectEl) return;
+
+      let biblioteca = obterBibliotecaCompleta();
+
+      if (biblioteca.length === 0) {
+        selectEl.innerHTML = '<option value="">Nenhum alimento salvo ainda...</option>';
+        document.getElementById('preview-calorias').style.display = 'none';
+        return;
+      }
+
+      let html = '<option value="">-- Selecione um alimento --</option>';
+      biblioteca.forEach((item, index) => {
+        html += `<option value="${index}">${item.nome} (${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g)</option>`;
+      });
+
+      selectEl.innerHTML = html;
+      calcularPreviewCalorias();
+    }
+
+    function renderGerenciarBiblioteca() {
+      const container = document.getElementById('lista-biblioteca-excluir');
+      if (!container) return;
+
+      let biblioteca = obterBibliotecaCompleta();
+      if (biblioteca.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem;">Nenhum alimento salvo na biblioteca.</p>';
+        return;
+      }
+
+      let html = '';
+      biblioteca.forEach((item, idx) => {
+        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 10px; border-radius:4px; margin-bottom:6px;">
+          <div style="display:flex; flex-direction:column;">
+            <span style="font-size:0.85rem; color:#f8fafc; font-weight:bold;">${item.nome}</span>
+            <span style="font-size:0.75rem; color:#94a3b8;">${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g</span>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button onclick="editarAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Editar">✏️</button>
+            <button onclick="excluirAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Excluir">❌</button>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    /* HISTÓRICO DE ÁGUA COM HORÁRIO */
     function renderHistoricoAgua() {
       const container = document.getElementById('historico-agua-lista');
       const labelUltimo = document.getElementById('ultima-atualizacao-agua');
@@ -406,7 +474,6 @@
         localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
       }
 
-      // Lançar Água com Horário
       if (aguaDigitada > 0) {
         const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
         const novaAgua = aguaAtual + aguaDigitada;
@@ -647,7 +714,7 @@
         return;
       }
 
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let biblioteca = obterBibliotecaCompleta();
       
       if (editIndexAlimento >= 0) {
         biblioteca[editIndexAlimento] = { nome, cal100g, prot100g };
@@ -666,7 +733,7 @@
     }
 
     function editarAlimentoBiblioteca(index) {
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let biblioteca = obterBibliotecaCompleta();
       const alimento = biblioteca[index];
       
       document.getElementById('input-novo-nome').value = alimento.nome;
@@ -696,27 +763,6 @@
       document.getElementById('btn-cancelar-edicao').style.display = 'none';
     }
 
-    function atualizarSelectAlimentosSalvos() {
-      const selectEl = document.getElementById('select-alimento-salvo');
-      if (!selectEl) return;
-
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
-
-      if (biblioteca.length === 0) {
-        selectEl.innerHTML = '<option value="">Nenhum alimento salvo ainda...</option>';
-        document.getElementById('preview-calorias').style.display = 'none';
-        return;
-      }
-
-      let html = '<option value="">-- Selecione um alimento --</option>';
-      biblioteca.forEach((item, index) => {
-        html += `<option value="${index}">${item.nome} (${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g)</option>`;
-      });
-
-      selectEl.innerHTML = html;
-      calcularPreviewCalorias();
-    }
-
     function toggleGerenciarBiblioteca() {
       const box = document.getElementById('box-gerenciar-biblioteca');
       if (box.style.display === 'none' || box.style.display === '') {
@@ -726,34 +772,8 @@
       }
     }
 
-    function renderGerenciarBiblioteca() {
-      const container = document.getElementById('lista-biblioteca-excluir');
-      if (!container) return;
-
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
-      if (biblioteca.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem;">Nenhum alimento salvo na biblioteca.</p>';
-        return;
-      }
-
-      let html = '';
-      biblioteca.forEach((item, idx) => {
-        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:8px 10px; border-radius:4px; margin-bottom:6px;">
-          <div style="display:flex; flex-direction:column;">
-            <span style="font-size:0.85rem; color:#f8fafc; font-weight:bold;">${item.nome}</span>
-            <span style="font-size:0.75rem; color:#94a3b8;">${item.cal100g} kcal | ${item.prot100g || 0}g prot em 100g</span>
-          </div>
-          <div style="display:flex; gap:12px;">
-            <button onclick="editarAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Editar">✏️</button>
-            <button onclick="excluirAlimentoBiblioteca(${idx})" style="background:none; border:none; cursor:pointer; font-size:1.1rem;" title="Excluir">❌</button>
-          </div>
-        </div>`;
-      });
-      container.innerHTML = html;
-    }
-
     function excluirAlimentoBiblioteca(index) {
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let biblioteca = obterBibliotecaCompleta();
       const alimento = biblioteca[index];
       
       if (confirm(`Deseja remover "${alimento.nome}" da sua biblioteca?`)) {
@@ -779,7 +799,7 @@
         return;
       }
 
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let biblioteca = obterBibliotecaCompleta();
       const alimento = biblioteca[selectEl.value];
       const gramas = parseFloat(document.getElementById('input-gramas').value) || 0;
 
@@ -803,7 +823,7 @@
         return;
       }
 
-      let biblioteca = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
+      let biblioteca = obterBibliotecaCompleta();
       const alimento = biblioteca[idx];
 
       const calTotal = Math.round((alimento.cal100g * gramas) / 100);
