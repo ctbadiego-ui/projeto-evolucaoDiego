@@ -146,7 +146,6 @@
       <div class="card">
         <h2>Controle de Alimentação</h2>
 
-        <!-- Lançar por Gramas -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
           <h3 style="font-size: 0.9rem; color: #38bdf8; margin-bottom: 8px;">⚖️ Lançar Alimento em Gramas</h3>
           
@@ -158,7 +157,6 @@
               </select>
             </div>
 
-            <!-- Preview em Gramas -->
             <div id="preview-calorias" style="font-size: 0.85rem; color: #38bdf8; font-weight: bold; background: #1e293b; padding: 6px 10px; border-radius: 4px; display: none; justify-content: space-between;">
               <span>Valores para este peso:</span>
               <span id="preview-calorias-valor">0 kcal | 0g prot</span>
@@ -171,7 +169,6 @@
           </div>
         </div>
 
-        <!-- Cadastrar/Editar em 100g -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed #334155; margin-bottom: 15px;">
           <h3 id="titulo-salvar-alimento" style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 8px;">💾 Salvar Novo Alimento (Base: 100g)</h3>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
@@ -187,7 +184,6 @@
           </div>
         </div>
 
-        <!-- Gerenciar Alimentos da Biblioteca -->
         <div style="margin-bottom: 15px;">
           <button type="button" onclick="toggleGerenciarBiblioteca()" style="width: 100%; padding: 8px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; font-size: 0.8rem; cursor: pointer; text-align: center;">
             ⚙️ Gerenciar / Editar Alimentos Salvos 🔻
@@ -199,7 +195,6 @@
           </div>
         </div>
         
-        <!-- Lista do Dia -->
         <h3 style="font-size: 0.95rem; color: #38bdf8; margin-bottom: 10px;">Refeições de Hoje:</h3>
         <div id="lista-refeicoes"></div>
       </div>
@@ -232,7 +227,6 @@
       <div class="card">
         <h2>Hábitos & Checklist Diário</h2>
         
-        <!-- Campo para adicionar novo hábito -->
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
           <input type="text" id="input-novo-habito" placeholder="Ex: Tomar Creatina, Comer salada..." 
                  style="flex: 1; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 6px;">
@@ -244,9 +238,32 @@
     </section>
 
     <!-- Section: Evolução -->
-    <section id="sec-evolucao" class="view-section"><div class="card"><h2>Histórico de Evolução</h2></div></section>
-    <!-- Section: Gráficos -->
-    <section id="sec-graficos" class="view-section"><div class="card"><h2>Gráfico de Evolução</h2></div></section>
+    <section id="sec-evolucao" class="view-section">
+      <div class="card">
+        <h2>Histórico de Evolução</h2>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Registros gravados a cada salvamento na aba Registrar:</p>
+        <div id="historico-evolucao-lista"></div>
+      </div>
+    </section>
+
+    <!-- Section: Gráficos Multicores -->
+    <section id="sec-graficos" class="view-section">
+      <div class="card">
+        <h2>Gráficos de Evolução</h2>
+        
+        <!-- Gráfico 1: Calorias In vs Out -->
+        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 16px;">
+          <h3 style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 8px;">🔥 Gasto vs 🍽️ Consumo Calórico</h3>
+          <canvas id="graficoCalorias" style="max-height: 220px; width: 100%;"></canvas>
+        </div>
+
+        <!-- Gráfico 2: Peso e Medidas -->
+        <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+          <h3 style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 8px;">⚖️ Peso corporal (kg) vs 📏 Cintura (cm)</h3>
+          <canvas id="graficoMedidas" style="max-height: 220px; width: 100%;"></canvas>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Navegação Inferior -->
@@ -264,6 +281,8 @@
     const ALTURA = 175;
     const IDADE = 31;
     let editIndexAlimento = -1;
+    let chartCaloriasInstance = null;
+    let chartMedidasInstance = null;
 
     function switchTab(tabId) {
       var sections = document.querySelectorAll('.view-section');
@@ -296,7 +315,148 @@
         renderHabitos();
       }
 
+      if (tabId === 'evolucao') {
+        renderHistoricoEvolucao();
+      }
+
+      if (tabId === 'graficos') {
+        renderGraficosMulticores();
+      }
+
       atualizarDashboard();
+    }
+
+    /* RENDERIZAR GRÁFICOS MULTICORES */
+    function renderGraficosMulticores() {
+      const ctxCal = document.getElementById('graficoCalorias');
+      const ctxMed = document.getElementById('graficoMedidas');
+      if (!ctxCal || !ctxMed) return;
+
+      let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+      const datas = historico.map(i => i.data);
+      const pesos = historico.map(i => parseFloat(i.peso) || null);
+      const cinturas = historico.map(i => parseFloat(i.cintura) || null);
+
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      const caloriasInHoje = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
+
+      const pesoAtual = parseFloat(localStorage.getItem('user_peso')) || 80;
+      const bmr = Math.round(88.36 + (13.4 * pesoAtual) + (4.8 * ALTURA) - (5.7 * IDADE));
+      const gastoTreino = parseInt(localStorage.getItem('user_calorias_treino_confirmado')) || 0;
+      const gastoTotalHoje = bmr + gastoTreino;
+
+      const labels = datas.length > 0 ? datas : ['Hoje'];
+
+      // Destrói instâncias anteriores para não sobrepor
+      if (chartCaloriasInstance) chartCaloriasInstance.destroy();
+      if (chartMedidasInstance) chartMedidasInstance.destroy();
+
+      // Gráfico 1: Calorias In vs Out
+      chartCaloriasInstance = new Chart(ctxCal, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '🔥 Gasto Total (kcal)',
+              data: labels.map(() => gastoTotalHoje),
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            },
+            {
+              label: '🍽️ Consumo Dieta (kcal)',
+              data: labels.map(() => caloriasInHoje),
+              borderColor: '#38bdf8',
+              backgroundColor: 'rgba(56, 189, 248, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 11 } } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+          }
+        }
+      });
+
+      // Gráfico 2: Peso e Cintura
+      chartMedidasInstance = new Chart(ctxMed, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '⚖️ Peso (kg)',
+              data: pesos.length > 0 ? pesos : [pesoAtual],
+              borderColor: '#22c55e',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            },
+            {
+              label: '📏 Cintura (cm)',
+              data: cinturas.length > 0 ? cinturas : [parseFloat(localStorage.getItem('user_cintura')) || 82],
+              borderColor: '#eab308',
+              backgroundColor: 'rgba(234, 179, 8, 0.1)',
+              borderWidth: 2,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: '#f8fafc', font: { size: 11 } } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+          }
+        }
+      });
+    }
+
+    /* HISTÓRICO DE EVOLUÇÃO */
+    function renderHistoricoEvolucao() {
+      const container = document.getElementById('historico-evolucao-lista');
+      if (!container) return;
+
+      let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+      
+      if (historico.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhum histórico registrado ainda. Salve suas medidas na aba Registrar!</p>';
+        return;
+      }
+
+      let html = '';
+      historico.slice().reverse().forEach((item, idx) => {
+        html += `
+          <div style="background:#0f172a; padding:12px; border-radius:8px; border:1px solid #334155; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; border-bottom:1px solid #1e293b; padding-bottom:4px;">
+              <strong style="color:#38bdf8; font-size:0.85rem;">📅 ${item.data}</strong>
+              <button onclick="excluirItemEvolucao(${historico.length - 1 - idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-size:0.8rem;">Excluir</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#f8fafc;">
+              <span>⚖️ ${item.peso} kg</span>
+              <span>📏 ${item.cintura} cm</span>
+              <span>🦵 ${item.panturrilha} cm</span>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function excluirItemEvolucao(index) {
+      let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+      historico.splice(index, 1);
+      localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
+      renderHistoricoEvolucao();
     }
 
     /* LÓGICA DE HÁBITOS / CHECKLIST */
@@ -378,6 +538,20 @@
       if (peso > 0) localStorage.setItem('user_peso', peso);
       if (cintura) localStorage.setItem('user_cintura', cintura);
       if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
+
+      if (peso > 0 || cintura || panturrilha) {
+        let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        
+        historico.push({
+          data: hoje,
+          peso: peso || '--',
+          cintura: cintura || '--',
+          panturrilha: panturrilha || '--'
+        });
+        
+        localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
+      }
 
       if (aguaDigitada > 0) {
         const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
@@ -677,6 +851,7 @@
       renderRefeicoes();
       carregarCamposRegistro();
       renderHabitos();
+      renderHistoricoEvolucao();
       atualizarDashboard();
       switchTab('dashboard');
     });
