@@ -138,6 +138,15 @@
             <button type="button" class="btn-primary" style="background: #334155; color: #94a3b8; width: auto;" onclick="zerarAgua()" title="Zerar Água">🔄</button>
           </div>
         </form>
+
+        <!-- Histórico de Consumo de Água -->
+        <div style="margin-top: 20px; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="font-size: 0.9rem; color: #38bdf8; margin: 0;">💧 Lançamentos de Água</h3>
+            <span id="ultima-atualizacao-agua" style="font-size: 0.75rem; color: #94a3b8;">Último: --:--</span>
+          </div>
+          <div id="historico-agua-lista"></div>
+        </div>
       </div>
     </section>
 
@@ -251,13 +260,11 @@
       <div class="card">
         <h2>Gráficos de Evolução</h2>
         
-        <!-- Gráfico 1: Calorias In vs Out -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 16px;">
           <h3 style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 8px;">🔥 Gasto vs 🍽️ Consumo Calórico</h3>
           <canvas id="graficoCalorias" style="max-height: 220px; width: 100%;"></canvas>
         </div>
 
-        <!-- Gráfico 2: Peso e Medidas -->
         <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155;">
           <h3 style="font-size: 0.9rem; color: #f8fafc; margin-bottom: 8px;">⚖️ Peso corporal (kg) vs 📏 Cintura (cm)</h3>
           <canvas id="graficoMedidas" style="max-height: 220px; width: 100%;"></canvas>
@@ -309,6 +316,7 @@
 
       if (tabId === 'registrar') {
         carregarCamposRegistro();
+        renderHistoricoAgua();
       }
 
       if (tabId === 'checklist') {
@@ -324,6 +332,109 @@
       }
 
       atualizarDashboard();
+    }
+
+    /* LÓGICA DO HISTÓRICO DE ÁGUA COM HORÁRIO */
+    function renderHistoricoAgua() {
+      const container = document.getElementById('historico-agua-lista');
+      const labelUltimo = document.getElementById('ultima-atualizacao-agua');
+      if (!container) return;
+
+      let logs = JSON.parse(localStorage.getItem('user_agua_logs') || '[]');
+
+      if (logs.length === 0) {
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.8rem; margin:0;">Nenhum consumo de água registrado hoje.</p>';
+        if (labelUltimo) labelUltimo.textContent = 'Último: --:--';
+        return;
+      }
+
+      if (labelUltimo) {
+        labelUltimo.textContent = `Último: ${logs[logs.length - 1].hora}`;
+      }
+
+      let html = '';
+      logs.slice().reverse().forEach((log, idx) => {
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:6px 10px; border-radius:6px; margin-top:6px;">
+            <span style="color:#38bdf8; font-weight:bold; font-size:0.85rem;">+${log.qtd} ml</span>
+            <span style="color:#cbd5e1; font-size:0.8rem;">⏰ ${log.hora}</span>
+            <button onclick="removerLogAgua(${logs.length - 1 - idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-size:0.8rem;">❌</button>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function removerLogAgua(index) {
+      let logs = JSON.parse(localStorage.getItem('user_agua_logs') || '[]');
+      if (logs[index]) {
+        const qtdRemovida = logs[index].qtd;
+        const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
+        const novaAgua = Math.max(0, aguaAtual - qtdRemovida);
+        
+        localStorage.setItem('user_agua', novaAgua);
+        logs.splice(index, 1);
+        localStorage.setItem('user_agua_logs', JSON.stringify(logs));
+        
+        renderHistoricoAgua();
+        atualizarDashboard();
+      }
+    }
+
+    function salvarRegistro() {
+      const peso = parseFloat(document.getElementById('input-peso').value) || 0;
+      const cintura = document.getElementById('input-cintura').value;
+      const panturrilha = document.getElementById('input-panturrilha').value;
+      const aguaDigitada = parseInt(document.getElementById('input-agua').value) || 0;
+
+      if (peso > 0) localStorage.setItem('user_peso', peso);
+      if (cintura) localStorage.setItem('user_cintura', cintura);
+      if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
+
+      if (peso > 0 || cintura || panturrilha) {
+        let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        
+        historico.push({
+          data: hoje,
+          peso: peso || '--',
+          cintura: cintura || '--',
+          panturrilha: panturrilha || '--'
+        });
+        
+        localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
+      }
+
+      // Lançar Água com Horário
+      if (aguaDigitada > 0) {
+        const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
+        const novaAgua = aguaAtual + aguaDigitada;
+        localStorage.setItem('user_agua', novaAgua);
+
+        let logs = JSON.parse(localStorage.getItem('user_agua_logs') || '[]');
+        const agora = new Date();
+        const horaStr = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        logs.push({ qtd: aguaDigitada, hora: horaStr });
+        localStorage.setItem('user_agua_logs', JSON.stringify(logs));
+
+        document.getElementById('input-agua').value = '';
+        renderHistoricoAgua();
+      }
+
+      alert('Dados registrados com sucesso!');
+      atualizarDashboard();
+      switchTab('dashboard');
+    }
+
+    function zerarAgua() {
+      if (confirm('Deseja zerar a contagem de água de hoje?')) {
+        localStorage.setItem('user_agua', 0);
+        localStorage.setItem('user_agua_logs', JSON.stringify([]));
+        renderHistoricoAgua();
+        atualizarDashboard();
+        alert('Contagem de água zerada!');
+      }
     }
 
     /* RENDERIZAR GRÁFICOS MULTICORES */
@@ -347,11 +458,9 @@
 
       const labels = datas.length > 0 ? datas : ['Hoje'];
 
-      // Destrói instâncias anteriores para não sobrepor
       if (chartCaloriasInstance) chartCaloriasInstance.destroy();
       if (chartMedidasInstance) chartMedidasInstance.destroy();
 
-      // Gráfico 1: Calorias In vs Out
       chartCaloriasInstance = new Chart(ctxCal, {
         type: 'line',
         data: {
@@ -385,7 +494,6 @@
         }
       });
 
-      // Gráfico 2: Peso e Cintura
       chartMedidasInstance = new Chart(ctxMed, {
         type: 'line',
         data: {
@@ -527,50 +635,6 @@
       if (peso) document.getElementById('input-peso').value = peso;
       if (cintura) document.getElementById('input-cintura').value = cintura;
       if (panturrilha) document.getElementById('input-panturrilha').value = panturrilha;
-    }
-
-    function salvarRegistro() {
-      const peso = parseFloat(document.getElementById('input-peso').value) || 0;
-      const cintura = document.getElementById('input-cintura').value;
-      const panturrilha = document.getElementById('input-panturrilha').value;
-      const aguaDigitada = parseInt(document.getElementById('input-agua').value) || 0;
-
-      if (peso > 0) localStorage.setItem('user_peso', peso);
-      if (cintura) localStorage.setItem('user_cintura', cintura);
-      if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
-
-      if (peso > 0 || cintura || panturrilha) {
-        let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
-        const hoje = new Date().toLocaleDateString('pt-BR');
-        
-        historico.push({
-          data: hoje,
-          peso: peso || '--',
-          cintura: cintura || '--',
-          panturrilha: panturrilha || '--'
-        });
-        
-        localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
-      }
-
-      if (aguaDigitada > 0) {
-        const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
-        const novaAgua = aguaAtual + aguaDigitada;
-        localStorage.setItem('user_agua', novaAgua);
-        document.getElementById('input-agua').value = '';
-      }
-
-      alert('Dados registrados com sucesso!');
-      atualizarDashboard();
-      switchTab('dashboard');
-    }
-
-    function zerarAgua() {
-      if (confirm('Deseja zerar a contagem de água de hoje?')) {
-        localStorage.setItem('user_agua', 0);
-        atualizarDashboard();
-        alert('Contagem de água zerada!');
-      }
     }
 
     function cadastrarAlimentoBiblioteca() {
@@ -852,6 +916,7 @@
       carregarCamposRegistro();
       renderHabitos();
       renderHistoricoEvolucao();
+      renderHistoricoAgua();
       atualizarDashboard();
       switchTab('dashboard');
     });
