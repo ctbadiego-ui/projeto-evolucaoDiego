@@ -150,7 +150,26 @@ function toggleConcluido(exercicioId, status) {
 }
 
 // ==========================================
-// 4. ABA REGISTRAR DADOS (COM ÁGUA INCLUÍDA)
+// 4. LÓGICA ACUMULATIVA DE ÁGUA
+// ==========================================
+function adicionarAgua(qtdMl) {
+  const valorDigitado = parseInt(qtdMl);
+  if (isNaN(valorDigitado) || valorDigitado <= 0) return;
+
+  const aguaAtual = parseInt(localStorage.getItem('reg_agua') || '0');
+  const novoTotal = aguaAtual + valorDigitado;
+  
+  localStorage.setItem('reg_agua', novoTotal);
+  renderAbaRegistro(); // Recarrega o campo mostrando o novo total acumulado
+}
+
+function resetarAgua() {
+  localStorage.setItem('reg_agua', 0);
+  renderAbaRegistro();
+}
+
+// ==========================================
+// 5. ABA REGISTRAR DADOS (COM SOMA DE ÁGUA)
 // ==========================================
 function renderAbaRegistro() {
   const containerRegistro = document.getElementById('secao-registro');
@@ -159,7 +178,7 @@ function renderAbaRegistro() {
   const pesoSalvo = localStorage.getItem('reg_peso') || '';
   const cinturaSalva = localStorage.getItem('reg_cintura') || '';
   const panturrilhaSalva = localStorage.getItem('reg_panturrilha') || '';
-  const aguaSalva = localStorage.getItem('reg_agua') || '';
+  const aguaAcumulada = localStorage.getItem('reg_agua') || '0';
 
   containerRegistro.innerHTML = `
     <h2 style="font-size: 1.1rem; color: #f8fafc; margin-bottom: 16px;">Registrar Dados de Hoje</h2>
@@ -199,14 +218,26 @@ function renderAbaRegistro() {
         </div>
       </div>
 
-      <!-- Campo Água -->
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">💧 Consumo de Água</span>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <input type="number" id="input-agua" step="50" placeholder="0" value="${aguaSalva}"
-                 onchange="localStorage.setItem('reg_agua', this.value)"
-                 style="width: 75px; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 6px; text-align: center;">
-          <span style="font-size: 0.85rem; color: #64748b;">ml</span>
+      <!-- Consumo de Água Acumulativo -->
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">💧 Água Acumulada</span>
+          <strong style="font-size: 1rem; color: #38bdf8;">${aguaAcumulada} ml</strong>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+          <input type="number" id="input-add-agua" step="50" placeholder="+ ml (ex: 250)" 
+                 style="flex: 1; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 6px; text-align: center;">
+          
+          <button onclick="adicionarAgua(document.getElementById('input-add-agua').value)"
+                  style="padding: 6px 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            + Somar
+          </button>
+          
+          <button onclick="resetarAgua()" title="Zerar água de hoje"
+                  style="padding: 6px 10px; background: #334155; color: #94a3b8; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
+            🔄
+          </button>
         </div>
       </div>
 
@@ -215,7 +246,7 @@ function renderAbaRegistro() {
 }
 
 // ==========================================
-// 5. INICIALIZAÇÃO DA PÁGINA
+// 6. INICIALIZAÇÃO DA PÁGINA
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => { 
   renderTreino('Segunda'); 
