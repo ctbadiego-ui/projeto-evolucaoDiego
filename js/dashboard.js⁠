@@ -1,5 +1,7 @@
-// Adicione ou substitua a função de adicionar água acumulada:
-function adicionarAgua(qtdMl) {
+// ==========================================
+// FUNÇÕES DE ÁGUA (ESCOPO GLOBAL)
+// ==========================================
+window.adicionarAgua = function(qtdMl) {
   const valorDigitado = parseInt(qtdMl);
   if (isNaN(valorDigitado) || valorDigitado <= 0) return;
 
@@ -7,15 +9,17 @@ function adicionarAgua(qtdMl) {
   const novoTotal = aguaAtual + valorDigitado;
   
   localStorage.setItem('reg_agua', novoTotal);
-  if (typeof renderAbaRegistro === 'function') renderAbaRegistro();
-}
+  renderAbaRegistro();
+};
 
-function resetarAgua() {
+window.resetarAgua = function() {
   localStorage.setItem('reg_agua', 0);
-  if (typeof renderAbaRegistro === 'function') renderAbaRegistro();
-}
+  renderAbaRegistro();
+};
 
-// Substitua a função que desenha a aba de registros no container de dados:
+// ==========================================
+// RENDERIZAÇÃO DA ABA REGISTRAR DADOS
+// ==========================================
 function renderAbaRegistro() {
   const containerRegistro = document.getElementById('secao-registro');
   if (!containerRegistro) return;
@@ -74,12 +78,12 @@ function renderAbaRegistro() {
           <input type="number" id="input-add-agua" step="50" placeholder="+ ml (ex: 250)" 
                  style="flex: 1; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 6px; text-align: center;">
           
-          <button onclick="adicionarAgua(document.getElementById('input-add-agua').value)"
+          <button onclick="window.adicionarAgua(document.getElementById('input-add-agua').value)"
                   style="padding: 6px 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
             + Somar
           </button>
           
-          <button onclick="resetarAgua()" title="Zerar água de hoje"
+          <button onclick="window.resetarAgua()" title="Zerar água de hoje"
                   style="padding: 6px 10px; background: #334155; color: #94a3b8; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
             🔄
           </button>
@@ -89,3 +93,5 @@ function renderAbaRegistro() {
     </div>
   `;
 }
+
+document.addEventListener('DOMContentLoaded', renderAbaRegistro);
