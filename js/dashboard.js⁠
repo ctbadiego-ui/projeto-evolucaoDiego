@@ -1,23 +1,4 @@
 // ==========================================
-// FUNÇÕES DE ÁGUA (ESCOPO GLOBAL)
-// ==========================================
-window.adicionarAgua = function(qtdMl) {
-  const valorDigitado = parseInt(qtdMl);
-  if (isNaN(valorDigitado) || valorDigitado <= 0) return;
-
-  const aguaAtual = parseInt(localStorage.getItem('reg_agua') || '0');
-  const novoTotal = aguaAtual + valorDigitado;
-  
-  localStorage.setItem('reg_agua', novoTotal);
-  renderAbaRegistro();
-};
-
-window.resetarAgua = function() {
-  localStorage.setItem('reg_agua', 0);
-  renderAbaRegistro();
-};
-
-// ==========================================
 // RENDERIZAÇÃO DA ABA REGISTRAR DADOS
 // ==========================================
 function renderAbaRegistro() {
@@ -71,20 +52,30 @@ function renderAbaRegistro() {
       <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">💧 Água Acumulada</span>
-          <strong style="font-size: 1rem; color: #38bdf8;">${aguaAcumulada} ml</strong>
+          <strong id="texto-agua-total" style="font-size: 1rem; color: #38bdf8;">${aguaAcumulada} ml</strong>
         </div>
 
         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
           <input type="number" id="input-add-agua" step="50" placeholder="+ ml (ex: 250)" 
                  style="flex: 1; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 6px; text-align: center;">
           
-          <button onclick="window.adicionarAgua(document.getElementById('input-add-agua').value)"
-                  style="padding: 6px 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+          <button type="button" onclick="(function(){
+            const inp = document.getElementById('input-add-agua');
+            const val = parseInt(inp.value);
+            if(isNaN(val) || val <= 0) return;
+            const atual = parseInt(localStorage.getItem('reg_agua') || '0');
+            const novo = atual + val;
+            localStorage.setItem('reg_agua', novo);
+            document.getElementById('texto-agua-total').innerText = novo + ' ml';
+            inp.value = '';
+          })()" style="padding: 6px 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
             + Somar
           </button>
           
-          <button onclick="window.resetarAgua()" title="Zerar água de hoje"
-                  style="padding: 6px 10px; background: #334155; color: #94a3b8; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
+          <button type="button" onclick="(function(){
+            localStorage.setItem('reg_agua', 0);
+            document.getElementById('texto-agua-total').innerText = '0 ml';
+          })()" title="Zerar água de hoje" style="padding: 6px 10px; background: #334155; color: #94a3b8; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
             🔄
           </button>
         </div>
