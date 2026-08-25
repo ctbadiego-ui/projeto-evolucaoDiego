@@ -132,9 +132,12 @@
           </div>
           <div class="form-row">
             <div class="form-group"><label>Panturrilha (cm)</label><input type="number" step="0.1" id="input-panturrilha" placeholder="Ex: 38.0"></div>
-            <div class="form-group"><label>Água (ml)</label><input type="number" step="100" id="input-agua" placeholder="Ex: 2500"></div>
+            <div class="form-group"><label>Adicionar Água (ml)</label><input type="number" step="50" id="input-agua" placeholder="+ Ex: 250"></div>
           </div>
-          <button type="button" class="btn-primary" onclick="salvarRegistro()">Salvar Registro</button>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn-primary" style="flex: 1;" onclick="salvarRegistro()">💾 Salvar e Somar Água</button>
+            <button type="button" class="btn-primary" style="background: #334155; color: #94a3b8; width: auto;" onclick="zerarAgua()" title="Zerar Água">🔄</button>
+          </div>
         </form>
       </div>
     </section>
@@ -272,23 +275,52 @@
         renderGerenciarBiblioteca();
       }
 
+      if (tabId === 'registrar') {
+        carregarCamposRegistro();
+      }
+
       atualizarDashboard();
+    }
+
+    function carregarCamposRegistro() {
+      const peso = localStorage.getItem('user_peso') || '';
+      const cintura = localStorage.getItem('user_cintura') || '';
+      const panturrilha = localStorage.getItem('user_panturrilha') || '';
+
+      if (peso) document.getElementById('input-peso').value = peso;
+      if (cintura) document.getElementById('input-cintura').value = cintura;
+      if (panturrilha) document.getElementById('input-panturrilha').value = panturrilha;
     }
 
     function salvarRegistro() {
       const peso = parseFloat(document.getElementById('input-peso').value) || 0;
       const cintura = document.getElementById('input-cintura').value;
       const panturrilha = document.getElementById('input-panturrilha').value;
-      const agua = document.getElementById('input-agua').value;
+      const aguaDigitada = parseInt(document.getElementById('input-agua').value) || 0;
 
       if (peso > 0) localStorage.setItem('user_peso', peso);
       if (cintura) localStorage.setItem('user_cintura', cintura);
       if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
-      if (agua) localStorage.setItem('user_agua', agua);
+
+      // Soma acumulativa da água
+      if (aguaDigitada > 0) {
+        const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
+        const novaAgua = aguaAtual + aguaDigitada;
+        localStorage.setItem('user_agua', novaAgua);
+        document.getElementById('input-agua').value = '';
+      }
 
       alert('Dados registrados com sucesso!');
       atualizarDashboard();
       switchTab('dashboard');
+    }
+
+    function zerarAgua() {
+      if (confirm('Deseja zerar a contagem de água de hoje?')) {
+        localStorage.setItem('user_agua', 0);
+        atualizarDashboard();
+        alert('Contagem de água zerada!');
+      }
     }
 
     function cadastrarAlimentoBiblioteca() {
@@ -567,6 +599,7 @@
       atualizarSelectAlimentosSalvos();
       renderGerenciarBiblioteca();
       renderRefeicoes();
+      carregarCamposRegistro();
       atualizarDashboard();
       switchTab('dashboard');
     });
