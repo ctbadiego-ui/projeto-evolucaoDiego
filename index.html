@@ -250,7 +250,7 @@
     <section id="sec-evolucao" class="view-section">
       <div class="card">
         <h2>Histórico de Evolução</h2>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Registros gravados a cada salvamento na aba Registrar:</p>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Resumo salvo automaticamente ao final de cada dia:</p>
         <div id="historico-evolucao-lista"></div>
       </div>
     </section>
@@ -334,7 +334,57 @@
       atualizarDashboard();
     }
 
-    /* RECUPERAÇÃO INTELIGENTE DE ALIMENTOS */
+    /* SALVAR RESUMO DO DIA ANTES DE ZERAR */
+    function salvarResumoDoDia(dataAnterior) {
+      const peso = localStorage.getItem('user_peso') || '--';
+      const cintura = localStorage.getItem('user_cintura') || '--';
+      const panturrilha = localStorage.getItem('user_panturrilha') || '--';
+      const agua = localStorage.getItem('user_agua') || '0';
+
+      const pesoNum = parseFloat(peso) || 80;
+      const bmr = Math.round(88.36 + (13.4 * pesoNum) + (4.8 * ALTURA) - (5.7 * IDADE));
+      const gastoTreino = parseInt(localStorage.getItem('user_calorias_treino_confirmado')) || 0;
+      const gastoTotal = bmr + gastoTreino;
+
+      let refeicoes = JSON.parse(localStorage.getItem('user_refeicoes') || '[]');
+      const caloriasIn = refeicoes.reduce((acc, curr) => acc + curr.cal, 0);
+      const proteinaIn = refeicoes.reduce((acc, curr) => acc + (curr.prot || 0), 0);
+
+      let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
+
+      historico.push({
+        data: dataAnterior,
+        peso: peso,
+        cintura: cintura,
+        panturrilha: panturrilha,
+        agua: agua,
+        caloriasIn: caloriasIn,
+        proteinaIn: proteinaIn.toFixed(1),
+        gastoTotal: gastoTotal
+      });
+
+      localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
+    }
+
+    /* VERIFICAÇÃO E RESET AUTOMÁTICO DE VIRADA DE DIA (00:00H) */
+    function verificarViradaDeDia() {
+      const hojeStr = new Date().toLocaleDateString('pt-BR');
+      const ultimaData = localStorage.getItem('user_ultimo_dia_registrado');
+
+      if (ultimaData && ultimaData !== hojeStr) {
+        salvarResumoDoDia(ultimaData);
+
+        localStorage.setItem('user_agua', 0);
+        localStorage.setItem('user_agua_logs', JSON.stringify([]));
+        localStorage.setItem('user_refeicoes', JSON.stringify([]));
+        localStorage.setItem('user_treinos_concluidos', JSON.stringify([]));
+        localStorage.setItem('user_calorias_treino_confirmado', 0);
+      }
+
+      localStorage.setItem('user_ultimo_dia_registrado', hojeStr);
+    }
+
+    /* RECUPERAÇÃO INTELIGENTE DE ALIMENTOS DA BIBLIOTECA */
     function obterBibliotecaCompleta() {
       let b1 = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
       let b2 = JSON.parse(localStorage.getItem('biblioteca_alimentos') || '[]');
@@ -460,20 +510,6 @@
       if (cintura) localStorage.setItem('user_cintura', cintura);
       if (panturrilha) localStorage.setItem('user_panturrilha', panturrilha);
 
-      if (peso > 0 || cintura || panturrilha) {
-        let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
-        const hoje = new Date().toLocaleDateString('pt-BR');
-        
-        historico.push({
-          data: hoje,
-          peso: peso || '--',
-          cintura: cintura || '--',
-          panturrilha: panturrilha || '--'
-        });
-        
-        localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
-      }
-
       if (aguaDigitada > 0) {
         const aguaAtual = parseInt(localStorage.getItem('user_agua') || '0');
         const novaAgua = aguaAtual + aguaDigitada;
@@ -595,7 +631,7 @@
       });
     }
 
-    /* HISTÓRICO DE EVOLUÇÃO */
+    /* HISTÓRICO DE EVOLUÇÃO DETALHADO */
     function renderHistoricoEvolucao() {
       const container = document.getElementById('historico-evolucao-lista');
       if (!container) return;
@@ -603,7 +639,7 @@
       let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
       
       if (historico.length === 0) {
-        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhum histórico registrado ainda. Salve suas medidas na aba Registrar!</p>';
+        container.innerHTML = '<p style="color:#94a3b8; font-size:0.85rem;">Nenhum histórico registrado ainda.</p>';
         return;
       }
 
@@ -615,10 +651,17 @@
               <strong style="color:#38bdf8; font-size:0.85rem;">📅 ${item.data}</strong>
               <button onclick="excluirItemEvolucao(${historico.length - 1 - idx})" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-size:0.8rem;">Excluir</button>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#f8fafc;">
+            
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#f8fafc; margin-bottom:4px;">
               <span>⚖️ ${item.peso} kg</span>
               <span>📏 ${item.cintura} cm</span>
               <span>🦵 ${item.panturrilha} cm</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; border-top:1px dashed #1e293b; padding-top:4px; margin-top:4px;">
+              <span>💧 ${item.agua || 0} ml</span>
+              <span>🍽️ ${item.caloriasIn || 0} kcal (${item.proteinaIn || 0}g prot)</span>
+              <span>🔥 Gasto: ${item.gastoTotal || 0} kcal</span>
             </div>
           </div>
         `;
@@ -928,8 +971,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+      verificarViradaDeDia();
+      
       var dateEl = document.getElementById('current-date-display');
       if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR');
+      
       atualizarSelectAlimentosSalvos();
       renderGerenciarBiblioteca();
       renderRefeicoes();
