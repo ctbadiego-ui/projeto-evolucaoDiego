@@ -122,7 +122,11 @@
     <!-- Section: Registrar -->
     <section id="sec-registrar" class="view-section">
       <div class="card">
-        <h2>Registrar Dados de Hoje</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2 style="margin:0;">Registrar Dados</h2>
+          <button type="button" onclick="reiniciarDiaManualmente()" style="background: #f43f5e; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">🔄 Zerar Hoje</button>
+        </div>
+
         <form id="form-registro">
           <div class="form-group-title">Medidas Corporais</div>
           <div class="form-row">
@@ -250,7 +254,7 @@
     <section id="sec-evolucao" class="view-section">
       <div class="card">
         <h2>Histórico de Evolução</h2>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Resumo salvo automaticamente ao final de cada dia:</p>
+        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px;">Resumo salvo ao final de cada dia:</p>
         <div id="historico-evolucao-lista"></div>
       </div>
     </section>
@@ -334,8 +338,8 @@
       atualizarDashboard();
     }
 
-    /* SALVAR RESUMO DO DIA ANTES DE ZERAR */
-    function salvarResumoDoDia(dataAnterior) {
+    /* SALVAR RESUMO DO DIA NO HISTÓRICO */
+    function salvarResumoDoDia(dataLog) {
       const peso = localStorage.getItem('user_peso') || '--';
       const cintura = localStorage.getItem('user_cintura') || '--';
       const panturrilha = localStorage.getItem('user_panturrilha') || '--';
@@ -353,7 +357,7 @@
       let historico = JSON.parse(localStorage.getItem('user_historico_medidas') || '[]');
 
       historico.push({
-        data: dataAnterior,
+        data: dataLog,
         peso: peso,
         cintura: cintura,
         panturrilha: panturrilha,
@@ -366,7 +370,7 @@
       localStorage.setItem('user_historico_medidas', JSON.stringify(historico));
     }
 
-    /* VERIFICAÇÃO E RESET AUTOMÁTICO DE VIRADA DE DIA (00:00H) */
+    /* VERIFICAÇÃO E RESET AUTOMÁTICO AO MUDAR O DIA */
     function verificarViradaDeDia() {
       const hojeStr = new Date().toLocaleDateString('pt-BR');
       const ultimaData = localStorage.getItem('user_ultimo_dia_registrado');
@@ -384,7 +388,26 @@
       localStorage.setItem('user_ultimo_dia_registrado', hojeStr);
     }
 
-    /* RECUPERAÇÃO INTELIGENTE DE ALIMENTOS DA BIBLIOTECA */
+    /* RESET MANUAL */
+    function reiniciarDiaManualmente() {
+      if (confirm('Deseja zerar os consumos do dia de hoje (água, dieta e treino)? O resumo atual será salvo na aba Evolução.')) {
+        const hojeStr = new Date().toLocaleDateString('pt-BR');
+        salvarResumoDoDia(hojeStr);
+
+        localStorage.setItem('user_agua', 0);
+        localStorage.setItem('user_agua_logs', JSON.stringify([]));
+        localStorage.setItem('user_refeicoes', JSON.stringify([]));
+        localStorage.setItem('user_treinos_concluidos', JSON.stringify([]));
+        localStorage.setItem('user_calorias_treino_confirmado', 0);
+
+        renderRefeicoes();
+        renderHistoricoAgua();
+        atualizarDashboard();
+        alert('Dia zerado com sucesso!');
+      }
+    }
+
+    /* RECUPERAÇÃO DE ALIMENTOS DA BIBLIOTECA */
     function obterBibliotecaCompleta() {
       let b1 = JSON.parse(localStorage.getItem('user_biblioteca_alimentos') || '[]');
       let b2 = JSON.parse(localStorage.getItem('biblioteca_alimentos') || '[]');
@@ -452,7 +475,7 @@
       container.innerHTML = html;
     }
 
-    /* HISTÓRICO DE ÁGUA COM HORÁRIO */
+    /* HISTÓRICO DE ÁGUA */
     function renderHistoricoAgua() {
       const container = document.getElementById('historico-agua-lista');
       const labelUltimo = document.getElementById('ultima-atualizacao-agua');
