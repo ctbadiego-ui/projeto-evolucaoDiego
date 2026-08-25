@@ -1,88 +1,46 @@
-// ==========================================
-// RENDERIZAÇÃO DA ABA REGISTRAR DADOS
-// ==========================================
-function renderAbaRegistro() {
-  const containerRegistro = document.getElementById('secao-registro');
-  if (!containerRegistro) return;
+// Função para carregar dados já salvos no formulário ao abrir a aba
+function carregarValoresRegistro() {
+  const p = localStorage.getItem('reg_peso') || '';
+  const c = localStorage.getItem('reg_cintura') || '';
+  const pt = localStorage.getItem('reg_panturrilha') || '';
+  const aguaTotal = localStorage.getItem('reg_agua') || '0';
 
-  const pesoSalvo = localStorage.getItem('reg_peso') || '';
-  const cinturaSalva = localStorage.getItem('reg_cintura') || '';
-  const panturrilhaSalva = localStorage.getItem('reg_panturrilha') || '';
-  const aguaAcumulada = localStorage.getItem('reg_agua') || '0';
-
-  containerRegistro.innerHTML = `
-    <h2 style="font-size: 1.1rem; color: #f8fafc; margin-bottom: 16px;">Registrar Dados de Hoje</h2>
-    
-    <div style="display: flex; flex-direction: column; gap: 12px; background: #0f172a; padding: 16px; border-radius: 8px; border: 1px solid #334155;">
-      
-      <!-- Peso -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
-        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">⚖️ Peso Corporal</span>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <input type="number" id="input-peso" step="0.1" placeholder="0.0" value="${pesoSalvo}"
-                 onchange="localStorage.setItem('reg_peso', this.value)"
-                 style="width: 75px; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 6px; text-align: center;">
-          <span style="font-size: 0.85rem; color: #64748b;">kg</span>
-        </div>
-      </div>
-
-      <!-- Cintura -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
-        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">📏 Cintura</span>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <input type="number" id="input-cintura" step="0.5" placeholder="0.0" value="${cinturaSalva}"
-                 onchange="localStorage.setItem('reg_cintura', this.value)"
-                 style="width: 75px; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 6px; text-align: center;">
-          <span style="font-size: 0.85rem; color: #64748b;">cm</span>
-        </div>
-      </div>
-
-      <!-- Panturrilha -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 8px;">
-        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">🦵 Panturrilha</span>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <input type="number" id="input-panturrilha" step="0.5" placeholder="0.0" value="${panturrilhaSalva}"
-                 onchange="localStorage.setItem('reg_panturrilha', this.value)"
-                 style="width: 75px; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #38bdf8; font-weight: bold; border-radius: 6px; text-align: center;">
-          <span style="font-size: 0.85rem; color: #64748b;">cm</span>
-        </div>
-      </div>
-
-      <!-- Água Acumulada -->
-      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">💧 Água Acumulada</span>
-          <strong id="texto-agua-total" style="font-size: 1rem; color: #38bdf8;">${aguaAcumulada} ml</strong>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-          <input type="number" id="input-add-agua" step="50" placeholder="+ ml (ex: 250)" 
-                 style="flex: 1; padding: 6px 8px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 6px; text-align: center;">
-          
-          <button type="button" onclick="(function(){
-            const inp = document.getElementById('input-add-agua');
-            const val = parseInt(inp.value);
-            if(isNaN(val) || val <= 0) return;
-            const atual = parseInt(localStorage.getItem('reg_agua') || '0');
-            const novo = atual + val;
-            localStorage.setItem('reg_agua', novo);
-            document.getElementById('texto-agua-total').innerText = novo + ' ml';
-            inp.value = '';
-          })()" style="padding: 6px 12px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            + Somar
-          </button>
-          
-          <button type="button" onclick="(function(){
-            localStorage.setItem('reg_agua', 0);
-            document.getElementById('texto-agua-total').innerText = '0 ml';
-          })()" title="Zerar água de hoje" style="padding: 6px 10px; background: #334155; color: #94a3b8; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
-            🔄
-          </button>
-        </div>
-      </div>
-
-    </div>
-  `;
+  if (document.getElementById('reg-peso')) document.getElementById('reg-peso').value = p;
+  if (document.getElementById('reg-cintura')) document.getElementById('reg-cintura').value = c;
+  if (document.getElementById('reg-panturrilha')) document.getElementById('reg-panturrilha').value = pt;
+  if (document.getElementById('total-agua-exibicao')) document.getElementById('total-agua-exibicao').innerText = aguaTotal;
 }
 
-document.addEventListener('DOMContentLoaded', renderAbaRegistro);
+// Função executada ao clicar no botão "Salvar Registro"
+function salvarRegistroCompleto(event) {
+  event.preventDefault();
+
+  const peso = document.getElementById('reg-peso').value;
+  const cintura = document.getElementById('reg-cintura').value;
+  const panturrilha = document.getElementById('reg-panturrilha').value;
+  const aguaAddInput = document.getElementById('reg-agua-add');
+  
+  // Salva Peso e Medidas
+  if (peso) localStorage.setItem('reg_peso', peso);
+  if (cintura) localStorage.setItem('reg_cintura', cintura);
+  if (panturrilha) localStorage.setItem('reg_panturrilha', panturrilha);
+
+  // Soma a Água Digitada ao Total
+  const valorAguaAdd = parseInt(aguaAddInput.value);
+  if (!isNaN(valorAguaAdd) && valorAguaAdd > 0) {
+    const aguaAtual = parseInt(localStorage.getItem('reg_agua') || '0');
+    const novoTotalAgua = aguaAtual + valorAguaAdd;
+    localStorage.setItem('reg_agua', novoTotalAgua);
+    document.getElementById('total-agua-exibicao').innerText = novoTotalAgua;
+    aguaAddInput.value = ''; // Limpa a caixa de digitação da água
+  }
+
+  alert('Registro salvo com sucesso!');
+}
+
+function zerarAguaTotal() {
+  localStorage.setItem('reg_agua', 0);
+  if (document.getElementById('total-agua-exibicao')) document.getElementById('total-agua-exibicao').innerText = '0';
+}
+
+document.addEventListener('DOMContentLoaded', carregarValoresRegistro);
